@@ -20,7 +20,7 @@
  * Created on 06-Nov-2009, 15:27:17
  */
 
-package org.rappsilber.gui;
+package org.rappsilber.gui.components;
 
 import java.awt.Component;
 import java.awt.event.ActionEvent;
@@ -30,6 +30,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import javax.swing.JFrame;
 import org.rappsilber.config.LocalProperties;
+import org.rappsilber.gui.GetFile;
 import org.rappsilber.gui.GetFile;
 
 /**
@@ -122,12 +123,12 @@ public class FileBrowser extends javax.swing.JPanel {
         txtFilePath = new javax.swing.JTextField();
 
         addAncestorListener(new javax.swing.event.AncestorListener() {
-            public void ancestorMoved(javax.swing.event.AncestorEvent evt) {
-            }
             public void ancestorAdded(javax.swing.event.AncestorEvent evt) {
                 formAncestorAdded(evt);
             }
             public void ancestorRemoved(javax.swing.event.AncestorEvent evt) {
+            }
+            public void ancestorMoved(javax.swing.event.AncestorEvent evt) {
             }
         });
         setLayout(new java.awt.BorderLayout());
