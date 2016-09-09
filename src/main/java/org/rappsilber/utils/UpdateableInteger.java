@@ -24,6 +24,10 @@ public class UpdateableInteger extends Number implements Comparable<UpdateableIn
     private static final long serialVersionUID = -9199441316689581338L;
     public int value;
 
+    public UpdateableInteger() {
+    }
+
+    
     public UpdateableInteger(int value) {
         this.value = value;
     }

@@ -22,6 +22,15 @@ package org.rappsilber.utils;
 public class UpdatableChar  implements java.io.Serializable, Comparable<UpdatableChar>  {
     public char value;
 
+    public UpdatableChar() {
+    }
+
+    public UpdatableChar(char value) {
+        this.value = value;
+    }
+
+    
+    
     public int compareTo(UpdatableChar o) {
         return this.value - o.value;
     }
