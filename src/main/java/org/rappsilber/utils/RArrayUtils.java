@@ -30,7 +30,7 @@ public abstract class RArrayUtils {
         StringBuilder sb = new StringBuilder();
         for (Object o : c) {
             sb.append(delim);
-            sb.append(o.toString());
+            sb.append(o == null? "" : o.toString());
         }
         return sb.substring(delim.length());
     }
@@ -66,7 +66,7 @@ public abstract class RArrayUtils {
         StringBuilder sb = new StringBuilder(a[0].toString());
         for (int i = 1; i<a.length; i++) {
             sb.append(delim);
-            sb.append(a[i].toString());
+            sb.append(a[i] == null ? "" : a[i].toString());
         }
         return sb.toString();
     }
@@ -77,7 +77,8 @@ public abstract class RArrayUtils {
         StringBuilder sb = new StringBuilder(a.get(0).toString());
         for (int i = 1; i<a.size(); i++) {
             sb.append(delim);
-            sb.append(a.get(i).toString());
+            Object o = a.get(i);
+            sb.append(o == null? "": o.toString());
         }
         return sb.toString();
     }
@@ -90,7 +91,8 @@ public abstract class RArrayUtils {
         StringBuilder sb = new StringBuilder(ai.next().toString());
         while (ai.hasNext()) {
             sb.append(delim);
-            sb.append(ai.next().toString());
+            Object o = ai.next();
+            sb.append(o == null? "":o.toString());
         }
         return sb.toString();
     }
