@@ -50,14 +50,14 @@ public class Version {
     
     
     
-    
     public Version(int major, int minor, int build, String svn_refbuild) {
         this.major = major;
         this.minor = minor;
         this.build = build;
-        this.extension = ""+Integer.parseInt(svn_refbuild.replaceAll("\\$Rev:\\s*", "").replaceAll("\\s*\\$", ""));
+        setExtension(svn_refbuild);
     }
-    
+
+        
     public String setExtension(String svn_refbuild) {
         if (svn_refbuild.matches("\\$Rev:\\s*[0-9]+\\s*\\$"))
             this.extension = ""+Integer.parseInt(svn_refbuild.replaceAll("\\$Rev:\\s*", "").replaceAll("\\s*\\$", ""));
