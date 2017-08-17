@@ -114,7 +114,12 @@ public class DoubleArrayList implements Collection<Double>, List<Double>, Random
             throw new IndexOutOfBoundsException("Index out of range:"+ pos);
         return list[pos];
     }
-    
+
+    public double getDouble(int pos) {
+        if (pos> count || pos <0)
+            throw new IndexOutOfBoundsException("Index out of range:"+ pos);
+        return list[pos];
+    }    
     public Double get(int pos, double defaultReturn) {
         if (pos> count || pos <0)
             return defaultReturn;

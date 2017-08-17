@@ -15,13 +15,17 @@
  */
 package org.rappsilber.utils;
 
+import java.io.IOException;
+import java.text.ParseException;
+import java.util.Properties;
+
 /**
  *
  * @author lfischer
  */
 public class Version {
     /** build - svn-revision*/
-    public int build;
+    public Integer build;
     /** extension */
     public String extension;
     /** the major number of the version*/
@@ -29,13 +33,13 @@ public class Version {
     /** the minor number of the version*/
     public int minor;
 
-    public Version(int major, int minor, int build) {
+    public Version(int major, int minor, Integer build) {
         this.major = major;
         this.minor = minor;
         this.build = build;
         this.extension="";
     }
-    public Version(int major, int minor, int build, int extension) {
+    public Version(int major, int minor, Integer build, int extension) {
         this.major = major;
         this.minor = minor;
         this.build = build;
@@ -45,7 +49,13 @@ public class Version {
     public Version(int major, int minor, String svn_refbuild) {
         this.major = major;
         this.minor = minor;
-        this.build = Integer.parseInt(svn_refbuild.replaceAll("\\$Rev:\\s*", "").replaceAll("\\s*\\$", ""));
+        int tb;
+        String extension = null;
+        try {
+            this.build = Integer.parseInt(svn_refbuild.replaceAll("\\$Rev:\\s*", "").replaceAll("\\s*\\$", ""));
+        } catch (NumberFormatException pe) {
+            this.extension = svn_refbuild;
+        }
     }
     
     
@@ -76,6 +86,23 @@ public class Version {
     @Override
     public String toString() {
         
-        return major + "." + minor + "." + build + (extension.isEmpty() ? "":  "."+extension );
+        return major + "." + minor +  (build == null?"": "." + build) + (extension.isEmpty() ? "":  "."+extension );
     }
+    
+    public static Version parseEmbededVersion(String propertyFile, String property) throws IOException {
+        final Properties properties = new Properties();
+        try {
+            properties.load(Version.class.getResourceAsStream(propertyFile));
+        } catch (Exception e) {
+            properties.load(Version.class.getClassLoader().getResourceAsStream(propertyFile));                
+        }
+        String[] v = properties.getProperty(property).split("\\.");
+
+        Version version = new Version(Integer.parseInt(v[0]), Integer.parseInt(v[1]), Integer.parseInt(v[2]));
+        if (v.length > 3) {
+            version.setExtension(v[3]);
+        }
+        return version;
+    }
+    
 }
