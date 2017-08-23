@@ -48,6 +48,7 @@ public class FileBrowser extends javax.swing.JPanel {
     private String m_LocalPropertyKey = DefaultLocalPropertyKey;
 
     private boolean m_autoAddExtension = true;
+    private String m_autoAddDefaultExtension = null;
     private boolean m_doLoad = true;
     protected boolean m_directoryOnly = false;
 
@@ -171,15 +172,22 @@ public class FileBrowser extends javax.swing.JPanel {
         
         if (file != null) {
             if (m_autoAddExtension && !file.contains(".") && getExtensions().length >0 && !new File(file).exists()) {
-                for (String ext : getExtensions()) {
-                    if (!ext.contentEquals("*")) {
-                        if (ext.startsWith("*"))
-                            ext = ext.substring(1);
-                        if (ext.startsWith("."))
-                            ext = ext.substring(1);
-                        file = file + "." + ext;
-                        break;
+                if (m_autoAddDefaultExtension == null) {
+                    for (String ext : getExtensions()) {
+                        if (!ext.contentEquals("*")) {
+                            if (ext.startsWith("*"))
+                                ext = ext.substring(1);
+                            if (ext.startsWith("."))
+                                ext = ext.substring(1);
+                            file = file + "." + ext;
+                            break;
+                        }
                     }
+                } else {
+                    if (m_autoAddDefaultExtension.startsWith("."))
+                        file = file + m_autoAddDefaultExtension;
+                    else
+                        file = file + "." + m_autoAddDefaultExtension;
                 }
                 
             }
@@ -317,5 +325,18 @@ public class FileBrowser extends javax.swing.JPanel {
         this.m_autoAddExtension = m_autoAddExtension;
     }
 
+    /**
+     * @return the m_autoAddExtension
+     */
+    public String isAutoAddDefaultExtension() {
+        return m_autoAddDefaultExtension;
+    }
+
+    /**
+     * @param m_autoAddExtension the m_autoAddExtension to set
+     */
+    public void setAutoAddDefaultExtension(String extension) {
+        this.m_autoAddDefaultExtension = extension;
+    }
 
 }

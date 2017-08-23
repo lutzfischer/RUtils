@@ -18,6 +18,8 @@ package org.rappsilber.utils;
 import java.io.IOException;
 import java.text.ParseException;
 import java.util.Properties;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -89,12 +91,17 @@ public class Version {
         return major + "." + minor +  (build == null?"": "." + build) + (extension.isEmpty() ? "":  "."+extension );
     }
     
-    public static Version parseEmbededVersion(String propertyFile, String property) throws IOException {
+    public static Version parseEmbededVersion(String propertyFile, String property) {
+        
         final Properties properties = new Properties();
         try {
             properties.load(Version.class.getResourceAsStream(propertyFile));
         } catch (Exception e) {
-            properties.load(Version.class.getClassLoader().getResourceAsStream(propertyFile));                
+            try {
+                properties.load(Version.class.getClassLoader().getResourceAsStream(propertyFile));                
+            }catch (Exception ex) {
+                Logger.getLogger(Version.class.getName()).log(Level.WARNING,"Could not parse version will be set to 0.0.0",ex);
+            }
         }
         String[] v = properties.getProperty(property).split("\\.");
 
