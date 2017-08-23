@@ -86,6 +86,7 @@ public class FileBrowser extends javax.swing.JPanel {
         if (path  == null) {
             return;
         }
+        txtFilePath.setText(m_file.getAbsolutePath());
         if ((path.exists()) &&  path.isDirectory())
             LocalProperties.setFolder(m_LocalPropertyKey, path);
         else
