@@ -71,6 +71,18 @@ public abstract class RArrayUtils {
         return sb.toString();
     }
 
+    
+    public static <T> String toStringNoNull(T[] a, String delim) {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i<a.length; i++) {
+            if  (a[i] != null) {
+                sb.append(a[i].toString());
+                sb.append(delim);
+            }
+        }
+        return sb.substring(0, sb.length()-1);
+    }
+    
     public static String toString(ArrayList a, String delim) {
         if (a.isEmpty())
             return "";
@@ -274,5 +286,55 @@ public abstract class RArrayUtils {
         return Math.max(v1,max(v2));
     }
 
+
+    public static <T extends Comparable<T>> T  min(Collection<T> values) {
+        T min = null;
+        Iterator<T> it = values.iterator();
+        if (it.hasNext()) {
+            min = it.next();
+            while (it.hasNext()) {
+                T n = it.next();
+                if (n.compareTo(min)<0) {
+                    min=n;
+                }
+            }
+        }
+        return min;
+    }
+
+    public static <T extends Comparable<T>> T  max(Collection<T> values) {
+        T max = null;
+        Iterator<T> it = values.iterator();
+        if (it.hasNext()) {
+            max = it.next();
+            while (it.hasNext()) {
+                T n = it.next();
+                if (n.compareTo(max)>0) {
+                    max=n;
+                }
+            }
+        }
+        return max;
+    }
+    
+    public static <T extends Comparable<T>> void  minmax(Collection<T> values, ObjectWrapper<T> min, ObjectWrapper<T> max) {
+        min.value = null;
+        max.value = null;
+        Iterator<T> it = values.iterator();
+        if (it.hasNext()) {
+            min.value = it.next();
+            max.value = min.value;
+            while (it.hasNext()) {
+                T n = it.next();
+                if (n.compareTo(min.value)<0) {
+                    min.value=n;
+                }
+                if (n.compareTo(max.value)>0) {
+                    max.value=n;
+                }
+            }
+        }
+    }
+    
     
 }

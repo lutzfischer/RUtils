@@ -1,5 +1,5 @@
-/*
- * Copyright 2015 Lutz Fischer <lfischer at staffmail.ed.ac.uk>.
+/* 
+ * Copyright 2016 Lutz Fischer <l.fischer@ed.ac.uk>.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,15 +18,21 @@ package org.rappsilber.gui.components.memory;
 import java.awt.Component;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
+import java.util.LinkedList;
 import java.util.TimerTask;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JFrame;
 import javax.swing.event.AncestorEvent;
 import javax.swing.event.AncestorListener;
+import org.rappsilber.utils.ObjectWrapper;
+import org.rappsilber.utils.RArrayUtils;
+import org.rappsilber.utils.StringUtils;
 
 /**
  *
- * @author lfischer
+ * @author Lutz Fischer <l.fischer@ed.ac.uk>
  */
 public class Memory extends javax.swing.JPanel {
 
@@ -35,49 +41,63 @@ public class Memory extends javax.swing.JPanel {
     private int m_timeout = 600;
     Runtime runtime = Runtime.getRuntime();
     
-    static public String toHuman(double n) {
-        String u = "B";
-        if (n > 1024) {
-            n/=1024;
-            u = "KB";
-        }
-        if (n > 1024) {
-            n/=1024;
-            u = "MB";
-        }
-        if (n > 1024) {
-            n/=1024;
-            u = "GB";
-        }
-        if (n > 1024) {
-            n/=1024;
-            u = "TB";
-        }
-        
-        if (n>10)
-            return String.format("%.0f" + u, n);
-        
-        if (Math.abs(Math.round(n) - n) >=0.1) {
-            return String.format("%.1f" + u, n);
-        } 
-        
-        return String.format("%.0f" + u, n);
-    }
     
     protected class ScanTask extends TimerTask {
         AtomicBoolean running = new AtomicBoolean(false);
+        double recentMinFreeMem = 0;
+        double recentMaxFreeMem = 0;
+        LinkedList<Double> recent = new LinkedList<>();
+        int maxRecent=10;
+        int logMemory = 0;
+        int didgc = 0;
+        
         @Override
         public void run() {
             if (running.compareAndSet(false, true)) {
-
-                double fm = runtime.freeMemory();
-                String fmu = "B";
-                double mm = runtime.maxMemory();
-                double tm = runtime.totalMemory();
-                double um = tm-fm;
-                
-                   
-                txtMemory.setText("Used: " + toHuman(um) + " of " + toHuman(mm) + "  (Free:" + toHuman(fm) + " Total:" + toHuman(tm) + " Max:"+ toHuman(mm) +")");
+                try {
+                    double fm = runtime.freeMemory();
+                    String fmu = "B";
+                    double mm = runtime.maxMemory();
+                    double tm = runtime.totalMemory();
+                    double um = tm-fm;
+                    recent.add(um);
+                    if (recent.size()>maxRecent) {
+                        recent.removeFirst();
+                    }
+                    ObjectWrapper<Double> min= new ObjectWrapper<>();
+                    ObjectWrapper<Double> max = new ObjectWrapper<>();
+                    RArrayUtils.minmax(recent,min,max);
+                    String message = "Used: " + StringUtils.toHuman(um) + " of " + StringUtils.toHuman(mm) + "  (Free:" + StringUtils.toHuman(fm) + " Total:" + StringUtils.toHuman(tm) + " Max:"+ StringUtils.toHuman(mm) +") (recent used:[" + (min.value == null ? "Min is NULL" : StringUtils.toHuman(min.value)) +".." + (max.value ==null ? "Max is NULL" :  StringUtils.toHuman(max.value)) +"])";
+                    if (tglLog.isSelected()) {
+                        if (logMemory++ % 60 == 0 ) {
+                            Logger.getLogger(Memory.class.getName()).log(Level.INFO,message);
+                        }
+                    } else 
+                        logMemory = 0;
+                    if (txtMemory!=null) {
+                        txtMemory.setText(message);
+                    }
+                    if (tglAGC.isSelected() && mm-um < 10*1024*1024 && didgc== 0) {
+                        Logger.getLogger(Memory.class.getName()).log(Level.INFO,"AutoGC triggered");
+                        message = "Used: " + StringUtils.toHuman(um) + " of " + StringUtils.toHuman(mm) + "  (Free:" + StringUtils.toHuman(fm) + " Total:" + StringUtils.toHuman(tm) + " Max:"+ StringUtils.toHuman(mm) +")";
+                        Logger.getLogger(Memory.class.getName()).log(Level.INFO,"Memory before GC:" + message);
+                        
+                        System.gc();
+                        System.gc();
+                        
+                        fm = runtime.freeMemory();
+                        mm = runtime.maxMemory();
+                        tm = runtime.totalMemory();
+                        um = tm-fm;
+                        message = "Used: " + StringUtils.toHuman(um) + " of " + StringUtils.toHuman(mm) + "  (Free:" + StringUtils.toHuman(fm) + " Total:" + StringUtils.toHuman(tm) + " Max:"+ StringUtils.toHuman(mm) +")";
+                        Logger.getLogger(Memory.class.getName()).log(Level.INFO,"Memory after GC:" + message);
+                        didgc=100;
+                    } else if (didgc>0) {
+                        didgc--;
+                    }
+                } catch (Exception e) {
+                    Logger.getLogger(Memory.class.getName()).log(Level.INFO,"Error during memory display:",e);
+                }
                 running.set(false);
             }
         }
@@ -151,12 +171,8 @@ public class Memory extends javax.swing.JPanel {
 
         txtMemory = new javax.swing.JTextField();
         gc = new javax.swing.JButton();
-
-        txtMemory.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                txtMemoryActionPerformed(evt);
-            }
-        });
+        tglLog = new javax.swing.JToggleButton();
+        tglAGC = new javax.swing.JToggleButton();
 
         gc.setText("gc");
         gc.addActionListener(new java.awt.event.ActionListener() {
@@ -165,33 +181,61 @@ public class Memory extends javax.swing.JPanel {
             }
         });
 
+        tglLog.setText("log");
+
+        tglAGC.setText("aGC");
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addComponent(txtMemory, javax.swing.GroupLayout.DEFAULT_SIZE, 236, Short.MAX_VALUE)
+                .addComponent(txtMemory, javax.swing.GroupLayout.DEFAULT_SIZE, 164, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(gc))
+                .addComponent(tglLog)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(tglAGC)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(gc)
+                .addGap(0, 0, 0))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                .addComponent(txtMemory)
-                .addComponent(gc, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE))
+            .addGroup(layout.createSequentialGroup()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(txtMemory)
+                    .addComponent(tglAGC, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
+                    .addComponent(gc, javax.swing.GroupLayout.PREFERRED_SIZE, 19, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(tglLog, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE))
+                .addGap(0, 0, 0))
         );
     }// </editor-fold>//GEN-END:initComponents
 
-    private void txtMemoryActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtMemoryActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_txtMemoryActionPerformed
-
     private void gcActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_gcActionPerformed
+
+        double fm = runtime.freeMemory();
+        double mm = runtime.maxMemory();
+        double tm = runtime.totalMemory();
+        double um = tm-fm;
+        Logger.getLogger(this.getClass().getName()).log(Level.INFO,"GC triggered");
+        String message = "Used: " + StringUtils.toHuman(um) + " of " + StringUtils.toHuman(mm) + "  (Free:" + StringUtils.toHuman(fm) + " Total:" + StringUtils.toHuman(tm) + " Max:"+ StringUtils.toHuman(mm) +")";
+        Logger.getLogger(Memory.class.getName()).log(Level.INFO,"Memory before GC:" + message);
         System.gc();
+        System.gc();
+        
+        fm = runtime.freeMemory();
+        mm = runtime.maxMemory();
+        tm = runtime.totalMemory();
+        um = tm-fm;
+        message = "Used: " + StringUtils.toHuman(um) + " of " + StringUtils.toHuman(mm) + "  (Free:" + StringUtils.toHuman(fm) + " Total:" + StringUtils.toHuman(tm) + " Max:"+ StringUtils.toHuman(mm) +")";
+        Logger.getLogger(Memory.class.getName()).log(Level.INFO,"Memory after GC:" + message);        
+                        
     }//GEN-LAST:event_gcActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton gc;
+    private javax.swing.JToggleButton tglAGC;
+    private javax.swing.JToggleButton tglLog;
     private javax.swing.JTextField txtMemory;
     // End of variables declaration//GEN-END:variables
 }

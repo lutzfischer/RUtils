@@ -66,17 +66,36 @@ public class GetFile {
             return m_description;
         }
     }
+
     public static String getFile(String[] FileExtension, String Description, String StartPath) {
+        String[] ret = getFile(FileExtension, Description, StartPath, false);
+        if (ret == null ||ret.length == 0)
+            return null;
+        return ret[0];
+    }
+
+    public static String[] getFile(String[] FileExtension, String Description, String StartPath, boolean multiple) {
         JFileChooser jfc = new JFileChooser();
         jfc.setCurrentDirectory(new File(StartPath));
         jfc.setAcceptAllFileFilterUsed(true);
         jfc.setAcceptAllFileFilterUsed(true);
         jfc.setFileFilter(new SimpleExtensionFilter(FileExtension, Description));
+        jfc.setMultiSelectionEnabled(multiple);
         //jfc.showOpenDialog(null);
         int ret = jfc.showOpenDialog(null);
         if (ret == JFileChooser.APPROVE_OPTION) {
             LocalProperties.setFolder(StartPath,jfc.getSelectedFile().getParentFile());
-            return jfc.getSelectedFile().getAbsolutePath();
+            File[] files = null;
+            if (multiple) {
+                files = jfc.getSelectedFiles();
+            } else {
+                files = new File[]{jfc.getSelectedFile()};
+            }
+            String[] s = new String[files.length];
+            for (int i =0; i<s.length; i++) {
+                s[i]=files[i].getAbsolutePath();
+            }
+            return s;
         } else
             return null;
     }

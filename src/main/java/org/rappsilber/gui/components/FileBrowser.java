@@ -32,6 +32,7 @@ import javax.swing.JFrame;
 import org.rappsilber.config.LocalProperties;
 import org.rappsilber.gui.GetFile;
 import org.rappsilber.gui.GetFile;
+import org.rappsilber.utils.RArrayUtils;
 
 /**
  *
@@ -44,13 +45,14 @@ public class FileBrowser extends javax.swing.JPanel {
     ArrayList<java.awt.event.ActionListener> m_actionlisteners = new ArrayList<ActionListener>();
     private String[] m_extensions = new String[]{"*"};
     private String m_description = "Files";
-    File    m_file;
+    File[]    m_file;
     private String m_LocalPropertyKey = DefaultLocalPropertyKey;
 
     private boolean m_autoAddExtension = true;
     private String m_autoAddDefaultExtension = null;
     private boolean m_doLoad = true;
     protected boolean m_directoryOnly = false;
+    private boolean m_multipleFiles = false;
 
     /** Creates new form FileBrowser */
     public FileBrowser() {
@@ -82,11 +84,12 @@ public class FileBrowser extends javax.swing.JPanel {
     }
 
     public void setFile(File path) {
-        m_file = path;
         if (path  == null) {
+            m_file = null;
             return;
         }
-        txtFilePath.setText(m_file.getAbsolutePath());
+        m_file = new File[]{path};
+        txtFilePath.setText(m_file[0].getAbsolutePath());
         if ((path.exists()) &&  path.isDirectory())
             LocalProperties.setFolder(m_LocalPropertyKey, path);
         else
@@ -95,6 +98,35 @@ public class FileBrowser extends javax.swing.JPanel {
         doActionPerformed();
     }
 
+    
+    public void setFiles(String[] paths) {
+        File[] f = new File[paths.length];
+        for (int i=0; i<paths.length;i++) {
+            f[i]=new File(paths[i]);
+        }
+        setFiles(f);
+    }
+    
+    public void setFiles(File[] paths) {
+        m_file = paths;
+        if (paths  == null) {
+            return;
+        }
+        StringBuilder sb = new StringBuilder();
+        for (File f: paths) {
+            sb.append(f.getAbsolutePath()).append(" ; ");
+        }
+        sb.delete(sb.length()-3, sb.length());
+        txtFilePath.setText(sb.toString());
+        
+        if (paths.length>0 && (paths[0].exists()) &&  paths[0].isDirectory())
+            LocalProperties.setFolder(m_LocalPropertyKey, paths[0]);
+        else
+            LocalProperties.setFolder(m_LocalPropertyKey, paths[0].getParent());
+
+        doActionPerformed();
+    }
+     
     public void unsetFile() {
         m_file = null;
     }
@@ -159,11 +191,12 @@ public class FileBrowser extends javax.swing.JPanel {
 
     private void btnSelectActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSelectActionPerformed
         String file = null;
+        String[] files = null;
         if (m_doLoad) {
             if (m_directoryOnly)
                 file = GetFile.getFolder(LocalProperties.getFolder(m_LocalPropertyKey).getAbsolutePath());
             else 
-                file = GetFile.getFile( getExtensions(), getDescription(), LocalProperties.getFolder(m_LocalPropertyKey).getAbsolutePath());
+                files = GetFile.getFile(getExtensions(), getDescription(), LocalProperties.getFolder(m_LocalPropertyKey).getAbsolutePath(), getMultipleFiles());
         }else {
             if (m_directoryOnly)
                 file = GetFile.getFolder(LocalProperties.getFolder(m_LocalPropertyKey).getAbsolutePath());
@@ -194,6 +227,9 @@ public class FileBrowser extends javax.swing.JPanel {
             }
             txtFilePath.setText(file);
             setFile(file);
+        } else if (files!=null) { 
+            txtFilePath.setText(file);
+            setFiles(files);
         }
 
     }//GEN-LAST:event_btnSelectActionPerformed
@@ -295,9 +331,14 @@ public class FileBrowser extends javax.swing.JPanel {
     }
 
     public File getFile() {
-        return m_file;
+        if (m_file == null || m_file.length == 0)
+            return null;
+        return m_file[0];
     }
 
+    public File[] getFiles() {
+        return m_file;
+    }    
     /**
      * @return the m_directoryOnly
      */
@@ -338,6 +379,20 @@ public class FileBrowser extends javax.swing.JPanel {
      */
     public void setAutoAddDefaultExtension(String extension) {
         this.m_autoAddDefaultExtension = extension;
+    }
+
+    /**
+     * @return the m_multipleFiles
+     */
+    public boolean getMultipleFiles() {
+        return m_multipleFiles;
+    }
+
+    /**
+     * @param m_multipleFiles the m_multipleFiles to set
+     */
+    public void setMultipleFiles(boolean m_multipleFiles) {
+        this.m_multipleFiles = m_multipleFiles;
     }
 
 }
