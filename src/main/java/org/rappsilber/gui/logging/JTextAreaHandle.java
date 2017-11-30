@@ -16,8 +16,8 @@
 
 package org.rappsilber.gui.logging;
 
+import java.util.LinkedList;
 import java.util.logging.ErrorManager;
-import java.util.logging.Filter;
 import java.util.logging.Formatter;
 import java.util.logging.Handler;
 import java.util.logging.Level;
@@ -35,13 +35,14 @@ public class JTextAreaHandle extends Handler {
   private JTextArea m_output = null;
   
   private StringBuffer m_log = new StringBuffer();
+  private LinkedList<LogRecord> records = new LinkedList<>();
 
   private Formatter formatter = null;
 
   private Level level = null;
   
-  private int m_maxlogsize = 1000000;
-
+  private int m_maxlogsize = 100000;
+  
 
   /**
    * private constructor, preventing initialisation
@@ -138,28 +139,37 @@ public class JTextAreaHandle extends Handler {
    */
   public synchronized void publish(LogRecord record) {
     String message = null;
+    int lastTextLength=m_log.length();
+    records.add(record);
+    if (records.size() > m_maxlogsize){
+        LogRecord todelete = records.getFirst();
+        if (todelete.getLevel().intValue()>=getLevel().intValue()) {
+            records.removeFirst();
+            message = getFormatter().format(record);
+            m_log.delete(0, message.length());
+            int p = m_output.getCaretPosition();
+            if (p>message.length())
+                m_output.setCaretPosition(p-message.length());
+        }
+    }
     //check if the record is loggable
     if (!isLoggable(record))
-      return;
+        return;
     try {
-      message = getFormatter().format(record);
+        message = getFormatter().format(record);
     } catch (Exception e) {
-      reportError(null, e, ErrorManager.FORMAT_FAILURE);
+        reportError(null, e, ErrorManager.FORMAT_FAILURE);
     }
 
     try {
-      m_log.append(message);
-      int l = m_log.length();
-      if (l > m_maxlogsize) {
-          int delTo = m_log.indexOf("\n", l - m_maxlogsize);
-          if (delTo < 0)
-              delTo = l - m_maxlogsize;
-          m_log.delete(0, delTo);
-      }
-                  
-        
-      m_output.setText(m_log.toString());
-      m_output.select(Integer.MAX_VALUE, Integer.MAX_VALUE);
+        m_log.append(message);
+
+        int pos = m_output.getCaretPosition();
+        m_output.setText(m_log.toString());
+        if (pos > lastTextLength-10) {
+            m_output.select(Integer.MAX_VALUE, Integer.MAX_VALUE);
+            m_output.setCaretPosition(m_log.length());
+        }
       
       //x = m_output.getSelectionEnd();
       //m_output.select(x,x);
@@ -169,6 +179,22 @@ public class JTextAreaHandle extends Handler {
 
   }
 
+    @Override
+    public synchronized void setLevel(Level newLevel) throws SecurityException {
+        super.setLevel(newLevel); //To change body of generated methods, choose Tools | Templates.
+        m_log.setLength(0);
+        for (LogRecord r : records) {
+            if (isLoggable(r)) {
+                m_log.append(getFormatter().format(r));
+            }
+        }
+        if (m_output!=null) {
+            m_output.setText(m_log.toString());
+            m_output.select(Integer.MAX_VALUE, Integer.MAX_VALUE);
+        }
+    }
+
+  
   public void close() {
   }
 
