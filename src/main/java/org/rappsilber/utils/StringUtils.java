@@ -193,7 +193,9 @@ public class StringUtils {
      * @param n the number to convert as string
      * @return string representation of the number
      */
-    static public String toHuman(double n) {
+    static public String toHuman(Double n) {
+        if (n==null)
+            return null;
         String u = "B";
         if (n > 1024) {
             n/=1024;
