@@ -336,5 +336,27 @@ public abstract class RArrayUtils {
         }
     }
     
+    public static <T extends Number & Comparable<T>> void  minmaxaverage(Collection<T> values, ObjectWrapper<T> min, ObjectWrapper<T> max,ObjectWrapper<Double> average) {
+        min.value = null;
+        max.value = null;
+        double sum =0;
+        Iterator<T> it = values.iterator();
+        if (it.hasNext()) {
+            min.value = it.next();
+            max.value = min.value;
+            sum=min.value.doubleValue();
+            while (it.hasNext()) {
+                T n = it.next();
+                if (n.compareTo(min.value)<0) {
+                    min.value=n;
+                }
+                if (n.compareTo(max.value)>0) {
+                    max.value=n;
+                }
+                sum+=n.doubleValue();
+            }
+        }
+        average.value = sum / values.size();
+    }
     
 }
