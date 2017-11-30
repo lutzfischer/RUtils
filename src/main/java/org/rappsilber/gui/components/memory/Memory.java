@@ -47,9 +47,11 @@ public class Memory extends javax.swing.JPanel {
         double recentMinFreeMem = 0;
         double recentMaxFreeMem = 0;
         LinkedList<Double> recent = new LinkedList<>();
-        int maxRecent=10;
+        int maxRecent=100;
+        int updateSteps=10;
         int logMemory = 0;
         int didgc = 0;
+        int step=0;
         
         @Override
         public void run() {
@@ -64,36 +66,40 @@ public class Memory extends javax.swing.JPanel {
                     if (recent.size()>maxRecent) {
                         recent.removeFirst();
                     }
-                    ObjectWrapper<Double> min= new ObjectWrapper<>();
-                    ObjectWrapper<Double> max = new ObjectWrapper<>();
-                    RArrayUtils.minmax(recent,min,max);
-                    String message = "Used: " + StringUtils.toHuman(um) + " of " + StringUtils.toHuman(mm) + "  (Free:" + StringUtils.toHuman(fm) + " Total:" + StringUtils.toHuman(tm) + " Max:"+ StringUtils.toHuman(mm) +") (recent used:[" + (min.value == null ? "Min is NULL" : StringUtils.toHuman(min.value)) +".." + (max.value ==null ? "Max is NULL" :  StringUtils.toHuman(max.value)) +"])";
-                    if (tglLog.isSelected()) {
-                        if (logMemory++ % 60 == 0 ) {
-                            Logger.getLogger(Memory.class.getName()).log(Level.INFO,message);
+                    if (++step==updateSteps) {
+                        step=0;
+                        ObjectWrapper<Double> min= new ObjectWrapper<>();
+                        ObjectWrapper<Double> max = new ObjectWrapper<>();
+                        ObjectWrapper<Double> average = new ObjectWrapper<>();
+                        RArrayUtils.minmaxaverage(recent,min,max,average);
+                        String message = "Used: " + StringUtils.toHuman(um) + " of " + StringUtils.toHuman(mm) + "  (Free:" + StringUtils.toHuman(fm) + " Total:" + StringUtils.toHuman(tm) + " Max:"+ StringUtils.toHuman(mm) +") (recent used:[" +  StringUtils.toHuman(min.value) +".."+ StringUtils.toHuman(average.value) +".." + StringUtils.toHuman(max.value) +"])";
+                        if (tglLog.isSelected()) {
+                            if (logMemory++ % 60 == 0 ) {
+                                Logger.getLogger(Memory.class.getName()).log(Level.INFO,message);
+                            }
+                        } else 
+                            logMemory = 0;
+                        if (txtMemory!=null) {
+                            txtMemory.setText(message);
                         }
-                    } else 
-                        logMemory = 0;
-                    if (txtMemory!=null) {
-                        txtMemory.setText(message);
-                    }
-                    if (tglAGC.isSelected() && mm-um < 10*1024*1024 && didgc== 0) {
-                        Logger.getLogger(Memory.class.getName()).log(Level.INFO,"AutoGC triggered");
-                        message = "Used: " + StringUtils.toHuman(um) + " of " + StringUtils.toHuman(mm) + "  (Free:" + StringUtils.toHuman(fm) + " Total:" + StringUtils.toHuman(tm) + " Max:"+ StringUtils.toHuman(mm) +")";
-                        Logger.getLogger(Memory.class.getName()).log(Level.INFO,"Memory before GC:" + message);
-                        
-                        System.gc();
-                        System.gc();
-                        
-                        fm = runtime.freeMemory();
-                        mm = runtime.maxMemory();
-                        tm = runtime.totalMemory();
-                        um = tm-fm;
-                        message = "Used: " + StringUtils.toHuman(um) + " of " + StringUtils.toHuman(mm) + "  (Free:" + StringUtils.toHuman(fm) + " Total:" + StringUtils.toHuman(tm) + " Max:"+ StringUtils.toHuman(mm) +")";
-                        Logger.getLogger(Memory.class.getName()).log(Level.INFO,"Memory after GC:" + message);
-                        didgc=100;
-                    } else if (didgc>0) {
-                        didgc--;
+                        if (tglAGC.isSelected() && mm-um < 10*1024*1024 && didgc== 0) {
+                            Logger.getLogger(Memory.class.getName()).log(Level.INFO,"AutoGC triggered");
+                            message = "Used: " + StringUtils.toHuman(um) + " of " + StringUtils.toHuman(mm) + "  (Free:" + StringUtils.toHuman(fm) + " Total:" + StringUtils.toHuman(tm) + " Max:"+ StringUtils.toHuman(mm) +")";
+                            Logger.getLogger(Memory.class.getName()).log(Level.INFO,"Memory before GC:" + message);
+
+                            System.gc();
+                            System.gc();
+
+                            fm = runtime.freeMemory();
+                            mm = runtime.maxMemory();
+                            tm = runtime.totalMemory();
+                            um = tm-fm;
+                            message = "Used: " + StringUtils.toHuman(um) + " of " + StringUtils.toHuman(mm) + "  (Free:" + StringUtils.toHuman(fm) + " Total:" + StringUtils.toHuman(tm) + " Max:"+ StringUtils.toHuman(mm) +")";
+                            Logger.getLogger(Memory.class.getName()).log(Level.INFO,"Memory after GC:" + message);
+                            didgc=100;
+                        } else if (didgc>0) {
+                            didgc--;
+                        }
                     }
                 } catch (Exception e) {
                     Logger.getLogger(Memory.class.getName()).log(Level.INFO,"Error during memory display:",e);
@@ -109,7 +115,7 @@ public class Memory extends javax.swing.JPanel {
      */
     public Memory() {
         initComponents();
-        m_scanTimer.scheduleAtFixedRate(new ScanTask(), 1000, 1000);
+        m_scanTimer.scheduleAtFixedRate(new ScanTask(), 100, 100);
         this.addAncestorListener(new AncestorListener() {
 
             public void ancestorAdded(AncestorEvent event) {
