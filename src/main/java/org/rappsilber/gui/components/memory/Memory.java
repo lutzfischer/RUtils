@@ -18,6 +18,7 @@ package org.rappsilber.gui.components.memory;
 import java.awt.Component;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
+import java.beans.PropertyChangeSupport;
 import java.util.LinkedList;
 import java.util.TimerTask;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -36,10 +37,18 @@ import org.rappsilber.utils.StringUtils;
  */
 public class Memory extends javax.swing.JPanel {
 
+    private final transient PropertyChangeSupport propertyChangeSupport = new java.beans.PropertyChangeSupport(this);
+    public static final String PROP_SHOWLOGBUTTON = "showLogButton";
+    public static final String PROP_SHOWAUTOGCBUTTON = "showAutoGCButton";
+    public static final String PROP_SHOWGCBUTTON = "showGCButton";
+
     
     java.util.Timer m_scanTimer = new java.util.Timer(true);
     private int m_timeout = 600;
     Runtime runtime = Runtime.getRuntime();
+    private boolean showLogButton = true;
+    private boolean showAutoGCButton = true;
+    private boolean showGCButton = true;
     
     
     protected class ScanTask extends TimerTask {
@@ -166,6 +175,58 @@ public class Memory extends javax.swing.JPanel {
         m_scanTimer.cancel();
     }
 
+        /**
+     * @return the showLogButton
+     */
+    public boolean isShowLogButton() {
+        return showLogButton;
+    }
+
+    /**
+     * @param showLogButton the showLogButton to set
+     */
+    public void setShowLogButton(boolean showLogButton) {
+        boolean oldShowLogButton = this.showLogButton;
+        this.showLogButton = showLogButton;
+        propertyChangeSupport.firePropertyChange(PROP_SHOWLOGBUTTON, oldShowLogButton, showLogButton);
+        this.tglLog.setVisible(showLogButton);
+    }
+
+    /**
+     * @return the showAutoGCButton
+     */
+    public boolean isShowAutoGCButton() {
+        return showAutoGCButton;
+    }
+
+    /**
+     * @param showAutoGCButton the showAutoGCButton to set
+     */
+    public void setShowAutoGCButton(boolean showAutoGCButton) {
+        boolean oldShowAutoGCButton = this.showAutoGCButton;
+        this.showAutoGCButton = showAutoGCButton;
+        propertyChangeSupport.firePropertyChange(PROP_SHOWAUTOGCBUTTON, oldShowAutoGCButton, showAutoGCButton);
+        this.tglAGC.setVisible(showAutoGCButton);
+    }
+
+    /**
+     * @return the showGCButton
+     */
+    public boolean isShowGCButton() {
+        return showGCButton;
+    }
+
+    /**
+     * @param showGCButton the showGCButton to set
+     */
+    public void setShowGCButton(boolean showGCButton) {
+        boolean oldShowGCButton = this.showGCButton;
+        this.showGCButton = showGCButton;
+        propertyChangeSupport.firePropertyChange(PROP_SHOWGCBUTTON, oldShowGCButton, showGCButton);
+        this.gc.setVisible(showGCButton);
+    }
+
+    
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
