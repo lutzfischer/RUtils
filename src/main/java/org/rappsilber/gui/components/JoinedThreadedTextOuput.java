@@ -19,6 +19,7 @@ import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.TimerTask;
@@ -67,8 +68,8 @@ public class JoinedThreadedTextOuput {
     /**
      * A timer-thread running as deamon-taking care of cleaning up old messages.
      */
-    java.util.Timer m_cleanupTimer = new java.util.Timer(true);
-    private int m_timeout = 600;
+    java.util.Timer m_cleanupTimer = new java.util.Timer("status cleanup", true);
+    private int m_timeout = 120;
     
     protected class CleanUpTask extends TimerTask {
         AtomicBoolean running = new AtomicBoolean(false);
@@ -78,19 +79,22 @@ public class JoinedThreadedTextOuput {
             
                 ArrayList<Thread> delete = new ArrayList<Thread>();
                 for (Thread t : m_messages.keySet()) {
-                    if (!t.isAlive()) {
-                        delete.add(t);
-                    } else {
+//                    if (!t.isAlive()) {
+//                        delete.add(t);
+//                    } else {
                         UpdateableInteger ui =m_messagestimeout.get(t);
                         if (ui!= null && ui.value-- ==0) {
                             delete.add(t);
                         }
-                    }
+//                    }
                 }
-                for (Thread t : delete) {
-                    m_messages.remove(t);
-                    m_messagesPublished.remove(t);
-                    m_messagestimeout.remove(t);
+                if (!delete.isEmpty()) {
+                    for (Thread t : delete) {
+                        m_messages.remove(t);
+                        m_messagesPublished.remove(t);
+                        m_messagestimeout.remove(t);
+                    }
+                    publish();
                 }
                 running.set(false);
             }
@@ -102,6 +106,7 @@ public class JoinedThreadedTextOuput {
     public JoinedThreadedTextOuput() {
     
         m_cleanupTimer.scheduleAtFixedRate(new CleanUpTask(), 1000, 1000);
+        
         
     }
     
@@ -160,7 +165,34 @@ public class JoinedThreadedTextOuput {
         final StringBuffer lineMessage = new StringBuffer();
         // messages send to other target - these include only unpublished messages
         final StringBuffer textMessage = new StringBuffer();
-        ArrayList<Thread> delete = new ArrayList<Thread>();
+        
+        // if we have to many status updates try to delete some stale ones
+        if (m_messagestimeout.size() >2) {
+            ArrayList<Thread> delete = new ArrayList<Thread>();
+            ArrayList<Thread> tfd = new ArrayList<>(m_messagestimeout.keySet());
+            java.util.Collections.sort(tfd, new Comparator<Thread>() {
+                @Override
+                public int compare(Thread o1, Thread o2) {
+                    return Integer.compare(m_messagestimeout.get(o2).value, m_messagestimeout.get(o1).value);
+                }
+            });
+            int del=0;
+            for (Thread test : tfd){
+                if (!test.isAlive()) {
+                    delete.add(test);
+                    del++;
+                    if (m_messagestimeout.size()-del <3)
+                        break;
+                }
+                    
+            }
+            for (Thread t : delete) {
+                m_messages.remove(t);
+                m_messagesPublished.remove(t);
+                m_messagestimeout.remove(t);
+            }        
+        }
+        
         
         // join up the messages
         for (Thread t : m_messages.keySet()) {
@@ -179,12 +211,14 @@ public class JoinedThreadedTextOuput {
             lineMessage.append(" | ");
             lineMessage.append(m);
             
-            // if the originating thread is dead
-            if (!t.isAlive()) {
-                // we won't publish anything again from it
-                delete.add(t);
-            }
+//            // if the originating thread is dead
+//            if (!t.isAlive()) {
+//                // we won't publish anything again from it
+//                delete.add(t);
+//            }
         }
+        if (lineMessage.length() >0)
+            lineMessage.delete(0, 3);
         
         javax.swing.SwingUtilities.invokeLater( new Runnable() {
 
@@ -192,16 +226,14 @@ public class JoinedThreadedTextOuput {
                 for (JTextComponent tc : m_guiout) {
                     tc.setText(tc.getText() + textMessage);
                 }
-                for (JTextField tf : m_guioutTextField) {
-                    tf.setText(lineMessage.substring(3));
+                if (lineMessage.length()>0) {
+                    for (JTextField tf : m_guioutTextField) {
+                        tf.setText(lineMessage.toString());
+                    }
                 }
             }
         });
-        for (Thread t : delete) {
-            m_messages.remove(t);
-            m_messagesPublished.remove(t);
-            m_messagestimeout.remove(t);
-        }
+
         
         
     }
