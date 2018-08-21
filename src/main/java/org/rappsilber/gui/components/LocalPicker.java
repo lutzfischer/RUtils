@@ -24,6 +24,7 @@ import java.util.Locale;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComboBox;
 import javax.swing.JOptionPane;
+import javax.swing.text.JTextComponent;
 
 /**
  *
@@ -107,7 +108,11 @@ public class LocalPicker extends JComboBox{
                     }
                     if (!isSet) {
                         JOptionPane.showMessageDialog(LocalPicker.this, "Could not identify the format");
+                    } else {
+                        ((JTextComponent)getEditor().getEditorComponent()).setCaretPosition(0);
                     }
+                } else {
+                    ((JTextComponent)getEditor().getEditorComponent()).setCaretPosition(0);
                 }
             }
         });
