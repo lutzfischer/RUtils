@@ -15,6 +15,7 @@
  */
 package org.rappsilber.utils;
 
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
@@ -34,6 +35,15 @@ public abstract class RArrayUtils {
         }
         return sb.substring(delim.length());
     }
+
+    public static <T extends Number>  String toString(Collection<T> a, String delim, NumberFormat format) {
+        StringBuilder sb = new StringBuilder();
+        for (T o : a ) {
+            sb.append(delim);
+            sb.append(o == null ? "" : format.format(o));
+        }
+        return sb.substring(delim.length());
+    }
     
     public static String toString(int[] a, String delim) {
         StringBuilder sb = new StringBuilder(Integer.toString(a[0]));
@@ -44,11 +54,29 @@ public abstract class RArrayUtils {
         return sb.toString();
     }
 
+    public static String toString(int[] a, String delim, NumberFormat format) {
+        StringBuilder sb = new StringBuilder(Integer.toString(a[0]));
+        for (int i = 1; i<a.length; i++) {
+            sb.append(delim);
+            sb.append(format.format(a[i]));
+        }
+        return sb.toString();
+    }
+    
     public static String toString(double[] a, String delim) {
         StringBuilder sb = new StringBuilder(Double.toString(a[0]));
         for (int i = 1; i<a.length; i++) {
             sb.append(delim);
             sb.append(Double.toString(a[i]));
+        }
+        return sb.toString();
+    }
+
+    public static String toString(double[] a, String delim, NumberFormat format) {
+        StringBuilder sb = new StringBuilder(Double.toString(a[0]));
+        for (int i = 1; i<a.length; i++) {
+            sb.append(delim);
+            sb.append(format.format(a[i]));
         }
         return sb.toString();
     }
@@ -62,6 +90,25 @@ public abstract class RArrayUtils {
         return sb.toString();
     }
 
+    public static String toString(long[] a, String delim, NumberFormat format) {
+        StringBuilder sb = new StringBuilder(Long.toString(a[0]));
+        for (int i = 1; i<a.length; i++) {
+            sb.append(delim);
+            sb.append(format.format(a[i]));
+        }
+        return sb.toString();
+    }
+
+    public static <T extends Number>  String toString(T[] a, String delim, NumberFormat format) {
+        StringBuilder sb = new StringBuilder(a[0].toString());
+        for (int i = 1; i<a.length; i++) {
+            sb.append(delim);
+            sb.append(a[i] == null ? "" : format.format(a[i]));
+        }
+        return sb.toString();
+    }
+
+    
     public static <T> String toString(T[] a, String delim) {
         StringBuilder sb = new StringBuilder(a[0].toString());
         for (int i = 1; i<a.length; i++) {

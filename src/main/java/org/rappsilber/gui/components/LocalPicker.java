@@ -86,22 +86,18 @@ public class LocalPicker extends JComboBox{
                         LocalComboBoxItem l  = items[i];
                         if (l.l.getDisplayName().toLowerCase().contentEquals(locale) 
                                 || l.l.toString().toLowerCase().contentEquals(locale)) {
-                            setLocale(l.l);
                             setSelectedIndex(i);
                             isSet = true;
                             break;
                             
                         }
                         if (l.l.getCountry().toLowerCase().contentEquals(locale)) {
-                            setLocale(l.l);
                             setSelectedIndex(i);
                             isSet = true;
                         } else if (l.l.getDisplayScript().toLowerCase().contentEquals(locale)) {
-                            setLocale(l.l);
                             setSelectedIndex(i);
                             isSet = true;
                         } else if (l.l.getDisplayLanguage().toLowerCase().contentEquals(locale)) {
-                            setLocale(l.l);
                             setSelectedIndex(i);
                             isSet = true;
                         }

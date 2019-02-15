@@ -31,7 +31,7 @@ import javax.swing.text.JTextComponent;
 import org.rappsilber.utils.UpdateableInteger;
 
 /**
- *
+ * a class that enables to present status messages from different threads to the same text-field
  * @author lfischer
  */
 public class JoinedThreadedTextOuput {

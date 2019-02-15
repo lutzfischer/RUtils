@@ -53,8 +53,10 @@ public class GetFile {
 
         @Override
         public boolean accept(File f) {
-
+            
             if (f.isDirectory()) return true;
+            if (m_extension == null)
+                return true;
 
             for (String ext : m_extension)
                 if  (f.getName().toLowerCase().endsWith(ext.toLowerCase()))
@@ -86,7 +88,6 @@ public class GetFile {
     public static String[] getFile(String[] FileExtension, String Description, String StartPath, boolean multiple, Component parent) {
         JFileChooser jfc = new JFileChooser();
         jfc.setCurrentDirectory(new File(StartPath));
-        jfc.setAcceptAllFileFilterUsed(true);
         jfc.setAcceptAllFileFilterUsed(true);
         jfc.setFileFilter(new SimpleExtensionFilter(FileExtension, Description));
         jfc.setMultiSelectionEnabled(multiple);
