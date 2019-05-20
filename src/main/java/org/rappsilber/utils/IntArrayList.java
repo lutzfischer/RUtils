@@ -26,9 +26,13 @@ import java.util.RandomAccess;
  * a memory saving implementation of ArrayList, that is not using an array of objects but an array of values (no extra referencing)
  * @author lfischer
  */
-public class IntArrayList implements Collection<Integer>, List<Integer>, RandomAccess {
+public class IntArrayList implements Collection<Integer>, List<Integer>, RandomAccess, Swap {
+    /** the actual data stored in an array */
     int[] list;
+    /** data-points stored. The length of the array can be larger then the amount of data */
     int count=0;
+    /** maximum increment. Increment is defined dynamically but will not exceed given size */
+    private int maxIncrement = 1000;
 
     public IntArrayList() {
         this(1);
@@ -54,6 +58,9 @@ public class IntArrayList implements Collection<Integer>, List<Integer>, RandomA
     public int add(int value) {
         if (list.length == count) {
             int step = (list.length / 10) + 1;
+            if (step > maxIncrement) {
+                step = maxIncrement;
+            }
             
             list = java.util.Arrays.copyOf(list, count + step);
         }
@@ -69,6 +76,9 @@ public class IntArrayList implements Collection<Integer>, List<Integer>, RandomA
             
         if (list.length == count) {
             int step = (list.length / 10) + 1;
+            if (step > maxIncrement) {
+                step = maxIncrement;
+            }
             
             list = java.util.Arrays.copyOf(list, count + step);
         }
@@ -343,6 +353,9 @@ public class IntArrayList implements Collection<Integer>, List<Integer>, RandomA
             
         if (list.length == count) {
             int step = (list.length / 10) + 1;
+            if (step > maxIncrement) {
+                step = maxIncrement;
+            }
             
             list = java.util.Arrays.copyOf(list, count + step);
         }
@@ -573,6 +586,28 @@ public class IntArrayList implements Collection<Integer>, List<Integer>, RandomA
         
     }
 
+    /**
+     * maximum increment. Increment is defined dynamically but will not exceed given size
+     * @return the maxIncrement
+     */
+    public int getMaxIncrement() {
+        return maxIncrement;
+    }
+
+    /**
+     * maximum increment. Increment is defined dynamically but will not exceed given size
+     * @param maxIncrement the maxIncrement to set
+     */
+    public void setMaxIncrement(int maxIncrement) {
+        this.maxIncrement = maxIncrement;
+    }
+
+    public void swap(int pos1, int pos2) {
+        int temp;
+        temp=list[pos1];
+        list[pos1]=list[pos2];
+        list[pos2] = temp;
+    }
 
 
 }

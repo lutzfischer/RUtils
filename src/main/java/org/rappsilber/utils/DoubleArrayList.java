@@ -35,9 +35,10 @@ import java.util.RandomAccess;
  *
  * @author lfischer
  */
-public class DoubleArrayList implements Collection<Double>, List<Double>, RandomAccess {
+public class DoubleArrayList implements Collection<Double>, List<Double>, RandomAccess, Swap {
     double[] list;
     int count=0;
+    int maxIncrement = 1000;
 
     public DoubleArrayList() {
         this(1);
@@ -63,6 +64,24 @@ public class DoubleArrayList implements Collection<Double>, List<Double>, Random
     public int add(double value) {
         if (list.length == count) {
             int step = (list.length / 10) + 1;
+            if (step > maxIncrement) {
+                Runtime runtime = Runtime.getRuntime();
+                double fm = runtime.freeMemory();
+                String fmu = "B";
+                double mm = runtime.maxMemory();
+                double tm = runtime.totalMemory();
+                double um = tm-fm;
+                double ds = (tm-um)/8;
+                if (ds*0.9<(count+step)) {
+                    step = maxIncrement;
+                    System.gc();
+                }
+                if (ds*0.9<(count+step)) {
+                    System.err.println("probably running out of memory soon");
+                    System.err.println("double space available:" + ds);
+                    System.err.println("double space needed:" + (count+step) + "+ overhead");
+                }
+            }
             
             list = java.util.Arrays.copyOf(list, count + step);
         }
@@ -70,6 +89,7 @@ public class DoubleArrayList implements Collection<Double>, List<Double>, Random
         return count;
     }
     
+    //@TODO probably buggy
     public void add(int pos, double value) {
         if (pos>count) {
             set(pos, value);
@@ -78,6 +98,8 @@ public class DoubleArrayList implements Collection<Double>, List<Double>, Random
             
         if (list.length == count) {
             int step = (list.length / 10) + 1;
+            if (step >maxIncrement)
+                step = maxIncrement;
             
             list = java.util.Arrays.copyOf(list, count + step);
         }
@@ -126,6 +148,7 @@ public class DoubleArrayList implements Collection<Double>, List<Double>, Random
         return list[pos];
     }    
     
+    //@TODO possibly buggy
     public Double remove(int pos) {
         if (pos>= count || pos <0)
             return 0d;
@@ -254,9 +277,9 @@ public class DoubleArrayList implements Collection<Double>, List<Double>, Random
         if (list.length<count+values.length) {
             list = java.util.Arrays.copyOf(list, count + values.length);
         }
-        for (int i = 0; i<values.length; i++) {
-            list[count++] = values[i];
-        }
+        System.arraycopy(values, 0, list, count, values.length);
+        count+=values.length;
+        
         
         return true;
     }
@@ -487,7 +510,8 @@ public class DoubleArrayList implements Collection<Double>, List<Double>, Random
             
         if (list.length == count) {
             int step = (list.length / 10) + 1;
-            
+            if (step > maxIncrement)
+                step = maxIncrement;
             list = java.util.Arrays.copyOf(list, count + step);
         }
         System.arraycopy(list, pos, list, pos+1, count-pos);
@@ -586,4 +610,158 @@ public class DoubleArrayList implements Collection<Double>, List<Double>, Random
         
     }
 
+    public void quicksort(boolean reverse) {
+        if (reverse)
+            quicksortRev(0,count-1);
+        else
+            quicksort(0,count-1);
+    }
+
+    public void quicksort() {
+        quicksort(0,count-1);
+    }
+
+    public void quicksort(boolean reverse, Swap cosort) {
+        if (reverse)
+            quicksortRev(0, count-1, cosort);
+        else
+            quicksort(0, count-1, cosort);
+    }
+
+    public void quicksort(Swap cosort) {
+        quicksort(0, count-1, cosort);
+    }
+    
+    protected void quicksort(int from, int to) {
+        double temp;
+        if (to-from > 0) {
+            double pivot = list[to];
+            int left = from;
+            int right = to;
+            while (left <= right) {
+                while (list[left] < pivot) {
+                    left++;
+                }
+                while (list[right] > pivot)
+                    right--;
+                
+                if (left <= right) {
+                    swap(left, right);
+                    left++;
+                    right--;
+                }
+            }
+            quicksort(from,right);
+            quicksort(left,to);
+        }
+    }
+
+
+    protected void quicksortRev(int from, int to) {
+        double temp;
+        if (to-from > 0) {
+            double pivot = list[to];
+            int left = from;
+            int right = to;
+            while (left <= right) {
+                while (list[left] > pivot) {
+                    left++;
+                }
+                while (list[right] < pivot)
+                    right--;
+                
+                if (left <= right) {
+                    swap(left, right);
+                    left++;
+                    right--;
+                }
+            }
+            quicksortRev(from,right);
+            quicksortRev(left,to);
+        }
+    }    
+
+    protected void quicksort(int from, int to, Swap cosort) {
+        double temp;
+        if (to-from > 0) {
+            double pivot = list[to];
+            int left = from;
+            int right = to;
+            while (left <= right) {
+                while (list[left] < pivot) {
+                    left++;
+                }
+                while (list[right] > pivot)
+                    right--;
+                
+                if (left <= right) {
+                    swap(left, right, cosort);
+                    left++;
+                    right--;
+                }
+            }
+            quicksort(from,right, cosort);
+            quicksort(left,to, cosort);
+        }
+    }
+
+
+    protected void quicksortRev(int from, int to, Swap cosort) {
+        double temp;
+        if (to-from > 0) {
+            double pivot = list[to];
+            int left = from;
+            int right = to;
+            while (left <= right) {
+                while (list[left] > pivot) {
+                    left++;
+                }
+                while (list[right] < pivot)
+                    right--;
+                
+                if (left <= right) {
+                    swap(left, right, cosort);
+                    left++;
+                    right--;
+                }
+            }
+            quicksortRev(from,right, cosort);
+            quicksortRev(left,to, cosort);
+        }
+    }    
+    
+    
+    public void swap(int pos1, int pos2) {
+        double temp;
+        temp=list[pos1];
+        list[pos1]=list[pos2];
+        list[pos2] = temp;
+    }
+
+    public void swap(int pos1, int pos2, Swap coswap) {
+        double temp;
+        temp=list[pos1];
+        list[pos1]=list[pos2];
+        list[pos2] = temp;
+        coswap.swap(pos1, pos2);
+    }
+    
+    /**
+     * maximum increment. Increment is defined dynamically but will not exceed given size
+     * @return the maxIncrement
+     */
+    public int getMaxIncrement() {
+        return maxIncrement;
+    }
+
+    /**
+     * maximum increment. Increment is defined dynamically but will not exceed given size
+     * @param maxIncrement the maxIncrement to set
+     */
+    public void setMaxIncrement(int maxIncrement) {
+        this.maxIncrement = maxIncrement;
+    }
+
+    
+    
 }
