@@ -28,6 +28,9 @@ public abstract class RArrayUtils {
 
 
     public static String toString(Collection c, String delim) {
+        if (c == null || c.isEmpty()) {
+            return "";
+        }
         StringBuilder sb = new StringBuilder();
         for (Object o : c) {
             sb.append(delim);
@@ -37,6 +40,9 @@ public abstract class RArrayUtils {
     }
 
     public static <T extends Number>  String toString(Collection<T> a, String delim, NumberFormat format) {
+        if (a == null || a.isEmpty()) {
+            return "";
+        }
         StringBuilder sb = new StringBuilder();
         for (T o : a ) {
             sb.append(delim);
@@ -46,6 +52,10 @@ public abstract class RArrayUtils {
     }
     
     public static String toString(int[] a, String delim) {
+        if (a == null || a.length == 0) {
+            return "";
+        }
+
         StringBuilder sb = new StringBuilder(Integer.toString(a[0]));
         for (int i = 1; i<a.length; i++) {
             sb.append(delim);
@@ -55,6 +65,10 @@ public abstract class RArrayUtils {
     }
 
     public static String toString(int[] a, String delim, NumberFormat format) {
+        if (a == null || a.length == 0) {
+            return "";
+        }
+
         StringBuilder sb = new StringBuilder(Integer.toString(a[0]));
         for (int i = 1; i<a.length; i++) {
             sb.append(delim);
@@ -82,6 +96,10 @@ public abstract class RArrayUtils {
     }
     
     public static String toString(long[] a, String delim) {
+        if (a == null || a.length == 0) {
+            return "";
+        }
+
         StringBuilder sb = new StringBuilder(Long.toString(a[0]));
         for (int i = 1; i<a.length; i++) {
             sb.append(delim);
@@ -91,6 +109,10 @@ public abstract class RArrayUtils {
     }
 
     public static String toString(long[] a, String delim, NumberFormat format) {
+        if (a == null || a.length == 0) {
+            return "";
+        }
+
         StringBuilder sb = new StringBuilder(Long.toString(a[0]));
         for (int i = 1; i<a.length; i++) {
             sb.append(delim);
@@ -100,6 +122,10 @@ public abstract class RArrayUtils {
     }
 
     public static <T extends Number>  String toString(T[] a, String delim, NumberFormat format) {
+        if (a == null || a.length == 0) {
+            return "";
+        }
+
         StringBuilder sb = new StringBuilder(a[0].toString());
         for (int i = 1; i<a.length; i++) {
             sb.append(delim);
@@ -110,6 +136,10 @@ public abstract class RArrayUtils {
 
     
     public static <T> String toString(T[] a, String delim) {
+        if (a == null || a.length == 0) {
+            return "";
+        }
+
         StringBuilder sb = new StringBuilder(a[0].toString());
         for (int i = 1; i<a.length; i++) {
             sb.append(delim);
@@ -120,6 +150,10 @@ public abstract class RArrayUtils {
 
     
     public static <T> String toStringNoNull(T[] a, String delim) {
+        if (a == null || a.length == 0) {
+            return "";
+        }
+
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i<a.length; i++) {
             if  (a[i] != null) {
@@ -131,6 +165,10 @@ public abstract class RArrayUtils {
     }
     
     public static String toString(ArrayList a, String delim) {
+        if (a == null || a.isEmpty()) {
+            return "";
+        }
+
         if (a.isEmpty())
             return "";
         StringBuilder sb = new StringBuilder(a.get(0).toString());
