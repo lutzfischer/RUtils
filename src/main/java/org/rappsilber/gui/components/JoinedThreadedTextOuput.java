@@ -68,7 +68,7 @@ public class JoinedThreadedTextOuput {
     /**
      * A timer-thread running as deamon-taking care of cleaning up old messages.
      */
-    java.util.Timer m_cleanupTimer = new java.util.Timer("status cleanup", true);
+    java.util.Timer m_cleanupTimer = new java.util.Timer("Timer - status cleanup", true);
     private int m_timeout = 120;
     
     protected class CleanUpTask extends TimerTask {

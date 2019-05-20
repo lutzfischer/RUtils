@@ -43,7 +43,7 @@ public class Memory extends javax.swing.JPanel {
     public static final String PROP_SHOWGCBUTTON = "showGCButton";
 
     
-    java.util.Timer m_scanTimer = new java.util.Timer(true);
+    java.util.Timer m_scanTimer = new java.util.Timer("Timer - FreeMemoryScan",true);
     private int m_timeout = 600;
     Runtime runtime = Runtime.getRuntime();
     private boolean showLogButton = true;
