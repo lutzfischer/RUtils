@@ -64,6 +64,18 @@ public abstract class RArrayUtils {
         return sb.toString();
     }
 
+    
+    public static String[] toStringArray(Object[] a) {
+        if (a == null || a.length == 0) {
+            return new String[0];
+        }
+        String[] ret = new String[a.length];
+        for (int i = 0; i<a.length; i++) {
+            ret[i]=a[i].toString();
+        }
+        return ret;
+    }
+    
     public static String toString(int[] a, String delim, NumberFormat format) {
         if (a == null || a.length == 0) {
             return "";
