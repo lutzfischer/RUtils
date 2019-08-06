@@ -32,6 +32,10 @@ public class UpdateableInteger extends Number implements Comparable<UpdateableIn
         this.value = value;
     }
 
+    public UpdateableInteger(UpdateableInteger value) {
+        this.value = value.value;
+    }
+
     @Override
     public int intValue() {
         return value;
