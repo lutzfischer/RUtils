@@ -25,11 +25,15 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JFrame;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
 import javax.swing.event.AncestorEvent;
 import javax.swing.event.AncestorListener;
+import org.rappsilber.gui.components.StackTraceMonitor;
 import org.rappsilber.utils.ObjectWrapper;
 import org.rappsilber.utils.RArrayUtils;
 import org.rappsilber.utils.StringUtils;
+import org.rappsilber.utils.UStackTraces;
 
 /**
  *
@@ -49,7 +53,9 @@ public class Memory extends javax.swing.JPanel {
     private boolean showLogButton = true;
     private boolean showAutoGCButton = true;
     private boolean showGCButton = true;
+    private StackTraceMonitor stacktracemonitor;
     
+    //private boolean agc = false;
     
     protected class ScanTask extends TimerTask {
         AtomicBoolean running = new AtomicBoolean(false);
@@ -82,7 +88,7 @@ public class Memory extends javax.swing.JPanel {
                         ObjectWrapper<Double> average = new ObjectWrapper<>();
                         RArrayUtils.minmaxaverage(recent,min,max,average);
                         String message = "Used: " + StringUtils.toHuman(um) + " of " + StringUtils.toHuman(mm) + "  (Free:" + StringUtils.toHuman(fm) + " Total:" + StringUtils.toHuman(tm) + " Max:"+ StringUtils.toHuman(mm) +") (recent used:[" +  StringUtils.toHuman(min.value) +".."+ StringUtils.toHuman(average.value) +".." + StringUtils.toHuman(max.value) +"])";
-                        if (tglLog.isSelected()) {
+                        if (mckLog.isSelected()) {
                             if (logMemory++ % 60 == 0 ) {
                                 Logger.getLogger(Memory.class.getName()).log(Level.INFO,message);
                             }
@@ -91,7 +97,7 @@ public class Memory extends javax.swing.JPanel {
                         if (txtMemory!=null) {
                             txtMemory.setText(message);
                         }
-                        if (tglAGC.isSelected() && mm-um < 10*1024*1024 && didgc== 0) {
+                        if (mckAGC.isSelected() && mm-um < 10*1024*1024 && didgc== 0) {
                             Logger.getLogger(Memory.class.getName()).log(Level.INFO,"AutoGC triggered");
                             message = "Used: " + StringUtils.toHuman(um) + " of " + StringUtils.toHuman(mm) + "  (Free:" + StringUtils.toHuman(fm) + " Total:" + StringUtils.toHuman(tm) + " Max:"+ StringUtils.toHuman(mm) +")";
                             Logger.getLogger(Memory.class.getName()).log(Level.INFO,"Memory before GC:" + message);
@@ -114,6 +120,7 @@ public class Memory extends javax.swing.JPanel {
                     Logger.getLogger(Memory.class.getName()).log(Level.INFO,"Error during memory display:",e);
                 }
                 running.set(false);
+                
             }
         }
         
@@ -189,7 +196,6 @@ public class Memory extends javax.swing.JPanel {
         boolean oldShowLogButton = this.showLogButton;
         this.showLogButton = showLogButton;
         propertyChangeSupport.firePropertyChange(PROP_SHOWLOGBUTTON, oldShowLogButton, showLogButton);
-        this.tglLog.setVisible(showLogButton);
     }
 
     /**
@@ -206,7 +212,6 @@ public class Memory extends javax.swing.JPanel {
         boolean oldShowAutoGCButton = this.showAutoGCButton;
         this.showAutoGCButton = showAutoGCButton;
         propertyChangeSupport.firePropertyChange(PROP_SHOWAUTOGCBUTTON, oldShowAutoGCButton, showAutoGCButton);
-        this.tglAGC.setVisible(showAutoGCButton);
     }
 
     /**
@@ -236,32 +241,51 @@ public class Memory extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        utilsmenu = new javax.swing.JMenu();
+        mGC = new javax.swing.JMenuItem();
+        mckLog = new javax.swing.JCheckBoxMenuItem();
+        mckAGC = new javax.swing.JCheckBoxMenuItem();
+        mStackTraces = new javax.swing.JMenuItem();
         txtMemory = new javax.swing.JTextField();
         gc = new javax.swing.JButton();
-        tglLog = new javax.swing.JToggleButton();
-        tglAGC = new javax.swing.JToggleButton();
 
-        gc.setText("gc");
+        utilsmenu.setText("jMenu1");
+
+        mGC.setText("Garbage Collection");
+        mGC.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                mGCActionPerformed(evt);
+            }
+        });
+        utilsmenu.add(mGC);
+
+        mckLog.setText("Log Memory Usage");
+        utilsmenu.add(mckLog);
+
+        mckAGC.setText("Automatic GC on low memory");
+        utilsmenu.add(mckAGC);
+
+        mStackTraces.setText("log statck traces");
+        mStackTraces.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                mStackTracesActionPerformed(evt);
+            }
+        });
+        utilsmenu.add(mStackTraces);
+
+        gc.setText("...");
         gc.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 gcActionPerformed(evt);
             }
         });
 
-        tglLog.setText("log");
-
-        tglAGC.setText("aGC");
-
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addComponent(txtMemory, javax.swing.GroupLayout.DEFAULT_SIZE, 164, Short.MAX_VALUE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(tglLog)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(tglAGC)
+                .addComponent(txtMemory, javax.swing.GroupLayout.DEFAULT_SIZE, 293, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(gc)
                 .addGap(0, 0, 0))
@@ -271,15 +295,19 @@ public class Memory extends javax.swing.JPanel {
             .addGroup(layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addComponent(txtMemory)
-                    .addComponent(tglAGC, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
-                    .addComponent(gc, javax.swing.GroupLayout.PREFERRED_SIZE, 19, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(tglLog, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE))
+                    .addComponent(gc, javax.swing.GroupLayout.PREFERRED_SIZE, 19, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(0, 0, 0))
         );
     }// </editor-fold>//GEN-END:initComponents
 
     private void gcActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_gcActionPerformed
+//        utilsmenu.setVisible(true);
+        utilsmenu.getPopupMenu().show(this, gc.getX(), gc.getY());
+//        doGC();        
+                        
+    }//GEN-LAST:event_gcActionPerformed
 
+    protected void doGC() {
         double fm = runtime.freeMemory();
         double mm = runtime.maxMemory();
         double tm = runtime.totalMemory();
@@ -295,14 +323,29 @@ public class Memory extends javax.swing.JPanel {
         tm = runtime.totalMemory();
         um = tm-fm;
         message = "Used: " + StringUtils.toHuman(um) + " of " + StringUtils.toHuman(mm) + "  (Free:" + StringUtils.toHuman(fm) + " Total:" + StringUtils.toHuman(tm) + " Max:"+ StringUtils.toHuman(mm) +")";
-        Logger.getLogger(Memory.class.getName()).log(Level.INFO,"Memory after GC:" + message);        
-                        
-    }//GEN-LAST:event_gcActionPerformed
+        Logger.getLogger(Memory.class.getName()).log(Level.INFO,"Memory after GC:" + message);
+    }
+
+    private void mGCActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mGCActionPerformed
+        doGC();
+    }//GEN-LAST:event_mGCActionPerformed
+
+    private void mStackTracesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mStackTracesActionPerformed
+        UStackTraces.logStackTraces(Level.SEVERE);
+        UStackTraces.getStackTraces().toString();
+        if (stacktracemonitor == null) {
+            stacktracemonitor = new StackTraceMonitor();
+        }
+        stacktracemonitor.setVisible(true);
+    }//GEN-LAST:event_mStackTracesActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton gc;
-    private javax.swing.JToggleButton tglAGC;
-    private javax.swing.JToggleButton tglLog;
+    private javax.swing.JMenuItem mGC;
+    private javax.swing.JMenuItem mStackTraces;
+    private javax.swing.JCheckBoxMenuItem mckAGC;
+    private javax.swing.JCheckBoxMenuItem mckLog;
     private javax.swing.JTextField txtMemory;
+    private javax.swing.JMenu utilsmenu;
     // End of variables declaration//GEN-END:variables
 }

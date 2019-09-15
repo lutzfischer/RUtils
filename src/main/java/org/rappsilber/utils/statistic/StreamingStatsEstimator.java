@@ -18,6 +18,7 @@ package org.rappsilber.utils.statistic;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
+import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.concurrent.Semaphore;
 import java.util.logging.Level;
@@ -110,7 +111,7 @@ public class StreamingStatsEstimator {
         // but as we are in a multithreaded enviroment we could have ended up in here 
         // several times in parrallel
         // so a previous call might have already taken care of it.
-        if (ws >= m_maxWindows) { 
+        //if (ws >= m_maxWindows) { 
             // we would exceed the maximum number of keys
             // so we are the first to tread the current limit
             double newResolution = m_resolution * 2;
@@ -131,7 +132,7 @@ public class StreamingStatsEstimator {
             }
             m_values = new_values;
             m_resolution = newResolution;
-        }
+        //}
     }
 
     public void addValue(double d) {
@@ -171,11 +172,98 @@ public class StreamingStatsEstimator {
         return histogramMedian(v, m_count);
     }
 
+    protected double histogram_monotonic_rate(int stretch, SortedMap<Double,BinValue> values) {
+        return histogram_monotonic_rate(stretch, values, m_min, m_max);
+    }
+
+    protected double histogram_monotonic_rate(int stretch, SortedMap<Double,BinValue> values, double from, double to) {
+        int currentstretch = 0;
+        int currentstretch_sum = 0;
+        int total_stretch = 0;
+        int total_sum = 0;
+        boolean up = true;
+        int last =0;
+        for (Map.Entry<Double,BinValue> b : values.subMap(from, to).entrySet()) {
+            int count = b.getValue().count;
+            total_sum += count;
+            if (up)  {
+                if (count >= last) {
+                    currentstretch ++;
+                    currentstretch_sum += count;
+                } else {
+                    up = false;
+                    if (currentstretch >= stretch) {
+                        total_stretch += currentstretch_sum;
+                    }
+                    currentstretch_sum = count;
+                    currentstretch = 1;
+                }
+            } else {
+                if (count <= last) {
+                    currentstretch ++;
+                    currentstretch_sum += count;
+                }else {
+                    up = true;
+                    if (currentstretch >= stretch) {
+                        total_stretch += currentstretch_sum;
+                    }
+                    currentstretch_sum = count;
+                    currentstretch = 1;
+                }
+            }
+            last = count;
+        }
+        return total_stretch/(double) total_sum;
+    }
+    
+    public StreamingStatsEstimator clone() {
+        StreamingStatsEstimator n = new StreamingStatsEstimator();
+        n.m_avg = m_avg;
+        n.m_count = m_count;
+        n.m_max = m_max;
+        n.m_mean2 = m_mean2;
+        n.m_maxWindows = m_maxWindows;
+        n.m_min = m_min;
+        n.m_resolution = m_resolution;
+        n.m_values = (TreeMap<Double, BinValue>) m_values.clone();
+        return n;
+    }
+    
+    public StreamingStatsEstimator getMostlyMonotonic() {
+        return getMostlyMonotonic(m_min, m_max);
+    }
+    
+    public StreamingStatsEstimator getMostlyMonotonic(double from, double to) {
+        int stretch = 10;
+        SortedMap<Double,BinValue> ftvalues = m_values.subMap(from, to);
+        if (ftvalues.size() <50) {
+            stretch = ftvalues.size()/5;
+            if (stretch <2) {
+                stretch = 3;
+            }
+            if(ftvalues.size()< stretch*3)
+                return this;
+        }
+        if (histogram_monotonic_rate(stretch, ftvalues)>0.5) {
+            return this;
+        }
+        StreamingStatsEstimator ret = this.clone();
+        ret.reduceResolution();
+        while (ret.m_values.size()> stretch*3 && histogram_monotonic_rate(stretch, ret.m_values)<=0.5) {
+            ret.reduceResolution();
+        }
+        return ret;
+    }
     
     public double getModeEstimation() {
         // count how many we have
-        TreeMap<Double, BinValue> v = m_values;
-        return histogramMode(v);
+        double mode = Double.NaN;
+        // if the data look to noisy we will just reduce the resolution a bit.
+        StreamingStatsEstimator sse =  getMostlyMonotonic();
+        TreeMap<Double, BinValue> v = sse.m_values;
+        mode = histogramMode(v);
+        
+        return mode;
     }
     
     public static double histogramMedian(TreeMap<Double, BinValue> v, int allcounts) {
@@ -240,14 +328,35 @@ public class StreamingStatsEstimator {
     }
 
     public static double histogramMode(Map<Double, BinValue> v) {
-        int max =0;
+        long max =0;
         double mode = Double.NaN;
+        BinValue first = v.values().iterator().next();
+        BinValue bv0 = first;
+        BinValue bv1 = first;
+        BinValue bv2 = first;
+        BinValue bv3 = first;
+        BinValue bv4 = first;
+        BinValue modebv = first;
         for (BinValue bv : v.values()) {
-            if (bv.count> max) {
-                max=bv.count;
-                mode=bv.average();
+            long c = bv0.count+bv1.count*2+bv2.count*3+bv3.count*2+bv4.count;
+            if (c > max) {
+                max=c;
+                mode=bv2.average();
+                modebv = bv2;
             }
+            bv0 = bv1;
+            bv1 = bv2;
+            bv2 = bv3;
+            bv3 = bv4;
+            bv4 = bv;
         }
+        long c = bv2.count+bv3.count*2+bv4.count*6;
+        if (c > max) {
+            max=c;
+            mode=bv4.average();
+        }
+        
+        
         return mode;
     }
 
@@ -310,7 +419,7 @@ public class StreamingStatsEstimator {
         Random r = new Random(1234);
         for (int i  =1; i< 10000000; i++) {
             e.addValue(3+r.nextGaussian());
-            if (i%100 == 0)
+            if (i%10 == 0)
                 e.addValue(10+r.nextGaussian());
         }
         
@@ -324,5 +433,19 @@ public class StreamingStatsEstimator {
         System.out.println("min:" + e.m_min);
         System.out.println("max:" + e.m_max);
         
+    }
+    
+    public String dumpCSV() {
+        StringBuilder sb = new StringBuilder("bin, average, count, min, max, sum\n");
+        for (Map.Entry<Double,BinValue> e : m_values.entrySet() ) {
+            BinValue bv = e.getValue();
+            sb.append(e.getKey()).append(", ");
+            sb.append(bv.average()).append(", ");
+            sb.append(bv.count).append(", ");
+            sb.append(bv.min).append(", ");
+            sb.append(bv.max).append(", ");
+            sb.append(bv.sum).append("\n");
+        }
+        return sb.toString();
     }
 }
