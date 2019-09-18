@@ -5,6 +5,7 @@
  */
 package org.rappsilber.utils;
 
+import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -28,12 +29,38 @@ public class UStackTraces {
         return getStackTraces(tg);
     }
 
+    public static StringBuilder getStackTraces(long id, boolean excludeDaemon) {
+        ThreadGroup tg = Thread.currentThread().getThreadGroup();
+        return getStackTraces(tg, id, excludeDaemon);
+    }
+    
     public static StringBuilder getStackTraces(ThreadGroup tg) {
+        return getStackTraces(tg, -1, false);
+    }
+
+    public static ArrayList<Long> getThreadIds() {
+        ThreadGroup tg = Thread.currentThread().getThreadGroup();
+        return getThreadIds(tg);
+    }
+
+    public static ArrayList<Long> getThreadIds(ThreadGroup tg) {
+        ArrayList<Long> ret = new ArrayList<>();
+        Thread[] active = new Thread[tg.activeCount()*100];
+        tg.enumerate(active, true);
+        for (Thread t : active) {
+            if (t != null) {
+                ret.add(t.getId());
+            }
+        }
+        return ret;
+    }
+
+    public static StringBuilder getStackTraces(ThreadGroup tg, long id, boolean excludeDaemon) {
         Thread[] active = new Thread[tg.activeCount()*100];
         tg.enumerate(active, true);
         StringBuilder sb = new StringBuilder();
         for (Thread t : active) {
-            if (t != null) {
+            if (t != null && (id<0 || t.getId() == id) && !(excludeDaemon  && t.isDaemon())) {
                 try {
                     sb.append("\n--------------------------\n");
                     sb.append("--- Thread stack-trace ---\n");
@@ -52,5 +79,5 @@ public class UStackTraces {
         }
         return sb;
     }
-    
+
 }

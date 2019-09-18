@@ -35,13 +35,25 @@ public class StackTraceMonitor extends javax.swing.JFrame {
         JFormattedTextField field = (JFormattedTextField) comp.getComponent(0);
         DefaultFormatter formatter = (DefaultFormatter) field.getFormatter();
         formatter.setCommitsOnValidEdit(true);
+        for (Long id :  UStackTraces.getThreadIds()) {
+            cbThreadSelect.addItem(id.toString());
+        }
     }
 
     private void setupTimer() {
+        
         TimerTask scanner  =new TimerTask() {
             @Override
             public void run() {
-                final String st = UStackTraces.getStackTraces().toString();
+                long id = -1;
+                String selectedThread = cbThreadSelect.getSelectedItem().toString();
+                if (!selectedThread.toLowerCase().contentEquals("ALL")) {
+                    try {
+                        id = Long.parseLong(selectedThread);
+                    } catch (Exception e) {}
+                }
+                boolean  excludeDaemon = ckExcludeDaemon.isSelected();
+                final String st = UStackTraces.getStackTraces(id, excludeDaemon).toString();
                 SwingUtilities.invokeLater(new Runnable() {
                     @Override
                     public void run() {
@@ -73,6 +85,8 @@ public class StackTraceMonitor extends javax.swing.JFrame {
         txtStacktrace = new javax.swing.JTextArea();
         spTimer = new javax.swing.JSpinner();
         lTimer = new javax.swing.JLabel();
+        cbThreadSelect = new javax.swing.JComboBox<>();
+        ckExcludeDaemon = new javax.swing.JCheckBox();
 
         btnClose.setText("close");
         btnClose.addActionListener(new java.awt.event.ActionListener() {
@@ -99,6 +113,11 @@ public class StackTraceMonitor extends javax.swing.JFrame {
 
         lTimer.setText("Update Interval");
 
+        cbThreadSelect.setEditable(true);
+        cbThreadSelect.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "All" }));
+
+        ckExcludeDaemon.setText("exclude daemon");
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -111,7 +130,11 @@ public class StackTraceMonitor extends javax.swing.JFrame {
                         .addComponent(lTimer)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(spTimer, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 130, Short.MAX_VALUE)
+                        .addGap(18, 18, 18)
+                        .addComponent(cbThreadSelect, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(ckExcludeDaemon)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(btnClose)))
                 .addContainerGap())
         );
@@ -124,7 +147,9 @@ public class StackTraceMonitor extends javax.swing.JFrame {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(btnClose)
                     .addComponent(spTimer, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(lTimer))
+                    .addComponent(lTimer)
+                    .addComponent(cbThreadSelect, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(ckExcludeDaemon))
                 .addContainerGap())
         );
 
@@ -184,6 +209,8 @@ public class StackTraceMonitor extends javax.swing.JFrame {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnClose;
+    private javax.swing.JComboBox<String> cbThreadSelect;
+    private javax.swing.JCheckBox ckExcludeDaemon;
     private javax.swing.JLabel lTimer;
     private javax.swing.JScrollPane spStackTrace;
     private javax.swing.JSpinner spTimer;

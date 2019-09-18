@@ -28,7 +28,11 @@
                       <Component id="lTimer" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="spTimer" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="130" max="32767" attributes="0"/>
+                      <EmptySpace type="separate" max="-2" attributes="0"/>
+                      <Component id="cbThreadSelect" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="ckExcludeDaemon" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="32767" attributes="0"/>
                       <Component id="btnClose" min="-2" max="-2" attributes="0"/>
                   </Group>
               </Group>
@@ -46,6 +50,8 @@
                   <Component id="btnClose" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="spTimer" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="lTimer" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="cbThreadSelect" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="ckExcludeDaemon" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
@@ -93,6 +99,24 @@
     <Component class="javax.swing.JLabel" name="lTimer">
       <Properties>
         <Property name="text" type="java.lang.String" value="Update Interval"/>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JComboBox" name="cbThreadSelect">
+      <Properties>
+        <Property name="editable" type="boolean" value="true"/>
+        <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
+          <StringArray count="1">
+            <StringItem index="0" value="All"/>
+          </StringArray>
+        </Property>
+      </Properties>
+      <AuxValues>
+        <AuxValue name="JavaCodeGenerator_TypeParameters" type="java.lang.String" value="&lt;String&gt;"/>
+      </AuxValues>
+    </Component>
+    <Component class="javax.swing.JCheckBox" name="ckExcludeDaemon">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="exclude daemon"/>
       </Properties>
     </Component>
   </SubComponents>
