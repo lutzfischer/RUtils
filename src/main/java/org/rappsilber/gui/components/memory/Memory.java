@@ -226,6 +226,7 @@ public class Memory extends javax.swing.JPanel {
         mckLog = new javax.swing.JCheckBoxMenuItem();
         mckAGC = new javax.swing.JCheckBoxMenuItem();
         mStackTraces = new javax.swing.JMenuItem();
+        mStackTracesLog = new javax.swing.JMenuItem();
         txtMemory = new javax.swing.JTextField();
         gc = new javax.swing.JButton();
 
@@ -245,13 +246,21 @@ public class Memory extends javax.swing.JPanel {
         mckAGC.setText("Automatic GC on low memory");
         utilsmenu.add(mckAGC);
 
-        mStackTraces.setText("log statck traces");
+        mStackTraces.setText("show statck traces");
         mStackTraces.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 mStackTracesActionPerformed(evt);
             }
         });
         utilsmenu.add(mStackTraces);
+
+        mStackTracesLog.setText("log stack traces");
+        mStackTracesLog.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                mStackTracesLogActionPerformed(evt);
+            }
+        });
+        utilsmenu.add(mStackTracesLog);
 
         gc.setText("...");
         gc.addActionListener(new java.awt.event.ActionListener() {
@@ -311,7 +320,6 @@ public class Memory extends javax.swing.JPanel {
     }//GEN-LAST:event_mGCActionPerformed
 
     private void mStackTracesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mStackTracesActionPerformed
-        UStackTraces.logStackTraces(Level.INFO);
         UStackTraces.getStackTraces().toString();
         if (stacktracemonitor == null) {
             stacktracemonitor = new StackTraceMonitor();
@@ -319,10 +327,15 @@ public class Memory extends javax.swing.JPanel {
         stacktracemonitor.setVisible(true);
     }//GEN-LAST:event_mStackTracesActionPerformed
 
+    private void mStackTracesLogActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mStackTracesLogActionPerformed
+        UStackTraces.logStackTraces(Level.INFO);
+    }//GEN-LAST:event_mStackTracesLogActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton gc;
     private javax.swing.JMenuItem mGC;
     private javax.swing.JMenuItem mStackTraces;
+    private javax.swing.JMenuItem mStackTracesLog;
     private javax.swing.JCheckBoxMenuItem mckAGC;
     private javax.swing.JCheckBoxMenuItem mckLog;
     private javax.swing.JTextField txtMemory;

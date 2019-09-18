@@ -43,6 +43,7 @@ public class StackTraceMonitor extends javax.swing.JFrame {
     private void setupTimer() {
         
         TimerTask scanner  =new TimerTask() {
+            int lastLength=0;
             @Override
             public void run() {
                 long id = -1;
@@ -53,7 +54,17 @@ public class StackTraceMonitor extends javax.swing.JFrame {
                     } catch (Exception e) {}
                 }
                 boolean  excludeDaemon = ckExcludeDaemon.isSelected();
-                final String st = UStackTraces.getStackTraces(id, excludeDaemon).toString();
+                String stFirst = UStackTraces.getStackTraces(id, excludeDaemon).toString();
+                if (id>0) {
+                    int lines = stFirst.length() - stFirst.replaceAll("\n", "").length();
+                    if (lastLength < lines) 
+                        lastLength = lines;
+                    while (lines < lastLength) {
+                        lines++;
+                        stFirst="\n"+stFirst;
+                    }
+                }
+                final String st = stFirst;
                 SwingUtilities.invokeLater(new Runnable() {
                     @Override
                     public void run() {

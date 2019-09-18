@@ -31,10 +31,18 @@
         </MenuItem>
         <MenuItem class="javax.swing.JMenuItem" name="mStackTraces">
           <Properties>
-            <Property name="text" type="java.lang.String" value="log statck traces"/>
+            <Property name="text" type="java.lang.String" value="show statck traces"/>
           </Properties>
           <Events>
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="mStackTracesActionPerformed"/>
+          </Events>
+        </MenuItem>
+        <MenuItem class="javax.swing.JMenuItem" name="mStackTracesLog">
+          <Properties>
+            <Property name="text" type="java.lang.String" value="log stack traces"/>
+          </Properties>
+          <Events>
+            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="mStackTracesLogActionPerformed"/>
           </Events>
         </MenuItem>
       </SubComponents>
