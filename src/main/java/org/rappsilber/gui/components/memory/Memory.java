@@ -42,8 +42,6 @@ import org.rappsilber.utils.UStackTraces;
 public class Memory extends javax.swing.JPanel {
 
     private final transient PropertyChangeSupport propertyChangeSupport = new java.beans.PropertyChangeSupport(this);
-    public static final String PROP_SHOWLOGBUTTON = "showLogButton";
-    public static final String PROP_SHOWAUTOGCBUTTON = "showAutoGCButton";
     public static final String PROP_SHOWGCBUTTON = "showGCButton";
 
     
@@ -190,28 +188,10 @@ public class Memory extends javax.swing.JPanel {
     }
 
     /**
-     * @param showLogButton the showLogButton to set
-     */
-    public void setShowLogButton(boolean showLogButton) {
-        boolean oldShowLogButton = this.showLogButton;
-        this.showLogButton = showLogButton;
-        propertyChangeSupport.firePropertyChange(PROP_SHOWLOGBUTTON, oldShowLogButton, showLogButton);
-    }
-
-    /**
      * @return the showAutoGCButton
      */
     public boolean isShowAutoGCButton() {
         return showAutoGCButton;
-    }
-
-    /**
-     * @param showAutoGCButton the showAutoGCButton to set
-     */
-    public void setShowAutoGCButton(boolean showAutoGCButton) {
-        boolean oldShowAutoGCButton = this.showAutoGCButton;
-        this.showAutoGCButton = showAutoGCButton;
-        propertyChangeSupport.firePropertyChange(PROP_SHOWAUTOGCBUTTON, oldShowAutoGCButton, showAutoGCButton);
     }
 
     /**
@@ -331,7 +311,7 @@ public class Memory extends javax.swing.JPanel {
     }//GEN-LAST:event_mGCActionPerformed
 
     private void mStackTracesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mStackTracesActionPerformed
-        UStackTraces.logStackTraces(Level.SEVERE);
+        UStackTraces.logStackTraces(Level.INFO);
         UStackTraces.getStackTraces().toString();
         if (stacktracemonitor == null) {
             stacktracemonitor = new StackTraceMonitor();
