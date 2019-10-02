@@ -86,9 +86,8 @@ public class JTextAreaHandle extends Handler {
 
         while (records.size() > m_maxlogsize) {
 
-            LogRecord todelete = records.getFirst();
-            if (todelete.getLevel().intValue() >= getLevel().intValue()) {
-                LogRecord d = records.removeFirst();
+            LogRecord d = records.removeFirst();
+            if (d.getLevel().intValue() >= getLevel().intValue()) {
                 message = getFormatter().format(d);
                 m_log.delete(0, message.length());
                 cp -= message.length();
