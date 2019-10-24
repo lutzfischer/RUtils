@@ -179,6 +179,7 @@ public class TriStateCheckBox extends JCheckBox{
     
     public void setSelected(Boolean b) {
         ((TristateButtonModel)model).setSelected(b);
+        this.repaint();
     }
     
 
