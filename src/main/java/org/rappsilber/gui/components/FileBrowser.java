@@ -111,8 +111,10 @@ public class FileBrowser extends javax.swing.JPanel {
             } else {
                 setFile(new File(path));
             }
-            
+            doActionPerformed();
         }
+        
+        
     }
 
     /**
