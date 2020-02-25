@@ -8,6 +8,7 @@ package org.rappsilber.utils;
 import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 
 /**
  *
@@ -31,11 +32,21 @@ public class UStackTraces {
 
     public static StringBuilder getStackTraces(long id, boolean excludeDaemon) {
         ThreadGroup tg = Thread.currentThread().getThreadGroup();
-        return getStackTraces(tg, id, excludeDaemon);
+        return getStackTraces(tg, id, null, excludeDaemon);
     }
-    
+
+    public static StringBuilder getStackTraces(long id, String namePattern, boolean excludeDaemon) {
+        ThreadGroup tg = Thread.currentThread().getThreadGroup();
+        return getStackTraces(tg, id, namePattern, excludeDaemon);
+    }
+
+    public static StringBuilder getStackTraces(String name, boolean excludeDaemon) {
+        ThreadGroup tg = Thread.currentThread().getThreadGroup();
+        return getStackTraces(tg, -1, name, excludeDaemon);
+    }
+
     public static StringBuilder getStackTraces(ThreadGroup tg) {
-        return getStackTraces(tg, -1, false);
+        return getStackTraces(tg, -1, null, false);
     }
 
     public static ArrayList<Long> getThreadIds() {
@@ -55,12 +66,23 @@ public class UStackTraces {
         return ret;
     }
 
-    public static StringBuilder getStackTraces(ThreadGroup tg, long id, boolean excludeDaemon) {
+    public static StringBuilder getStackTraces(ThreadGroup tg, long id, String namePattern, boolean excludeDaemon) {
         Thread[] active = new Thread[tg.activeCount()*100];
         tg.enumerate(active, true);
         StringBuilder sb = new StringBuilder();
+        Pattern p = null;
+        if (namePattern != null && !namePattern.isBlank()) {
+                
+            
+            if (namePattern.toLowerCase().contentEquals(namePattern))
+                p = Pattern.compile(namePattern,Pattern.CASE_INSENSITIVE);
+            else
+                p = Pattern.compile(namePattern);
+            
+        }
+        
         for (Thread t : active) {
-            if (t != null && (id<0 || t.getId() == id) && !(excludeDaemon  && t.isDaemon())) {
+            if (t != null && (id<0 || t.getId() == id) && (p == null || p.matcher(t.getName()).find()) && !(excludeDaemon  && t.isDaemon())) {
                 try {
                     sb.append("\n--------------------------\n");
                     sb.append("--- Thread stack-trace ---\n");

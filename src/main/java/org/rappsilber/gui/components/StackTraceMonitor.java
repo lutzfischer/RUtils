@@ -47,14 +47,17 @@ public class StackTraceMonitor extends javax.swing.JFrame {
             @Override
             public void run() {
                 long id = -1;
+                String np = null;
                 String selectedThread = cbThreadSelect.getSelectedItem().toString();
-                if (!selectedThread.toLowerCase().contentEquals("ALL")) {
+                if (!selectedThread.toLowerCase().contentEquals("all")) {
                     try {
                         id = Long.parseLong(selectedThread);
-                    } catch (Exception e) {}
+                    } catch (Exception e) {
+                        np = selectedThread;
+                    }
                 }
                 boolean  excludeDaemon = ckExcludeDaemon.isSelected();
-                String stFirst = UStackTraces.getStackTraces(id, excludeDaemon).toString();
+                String stFirst = UStackTraces.getStackTraces(id, np, excludeDaemon).toString();
                 if (id>0) {
                     int lines = stFirst.length() - stFirst.replaceAll("\n", "").length();
                     if (lastLength < lines) 
@@ -98,6 +101,8 @@ public class StackTraceMonitor extends javax.swing.JFrame {
         lTimer = new javax.swing.JLabel();
         cbThreadSelect = new javax.swing.JComboBox<>();
         ckExcludeDaemon = new javax.swing.JCheckBox();
+
+        setTitle("StackTrace Monitor");
 
         btnClose.setText("close");
         btnClose.addActionListener(new java.awt.event.ActionListener() {
