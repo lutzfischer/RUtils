@@ -298,6 +298,95 @@ public abstract class RArrayUtils {
             }
         };
     }
+
+    public static Collection<Integer> toCollection(final int[] list) {
+        return new Collection<Integer>() {
+
+            public int size() {
+                return list.length;
+            }
+
+            public boolean isEmpty() {
+                return list.length == 0;
+            }
+
+            public boolean contains(Object o) {
+                for (Integer e:list) {
+                    if (o.equals(e))
+                        return true;
+                }
+                return false;
+            }
+
+            public Iterator<Integer> iterator() {
+                return new Iterator<Integer>() {
+                    int pos = 0;
+                    public boolean hasNext() {
+                        return pos<list.length;
+                    }
+
+                    public Integer next() {
+                        return list[pos++];
+                    }
+
+                    public void remove() {
+                        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+                    }
+                };
+            }
+
+            public Integer[] toArray() {
+                Integer[] ret = new Integer[list.length];
+                for (int i = 0; i<ret.length; i++)
+                    ret[i] = list[i];
+                return ret;
+            }
+
+            public <E> E[] toArray(E[] a) {
+                if (a.getClass() == Integer[].class) {
+                    if (a.length >= list.length) {
+                        System.arraycopy(toArray(), 0, a, 0, list.length);
+                        return a;
+                    } else 
+                        return (E[]) toArray();
+                } else {
+                    throw new UnsupportedOperationException("Array-types incompatible."); //To change body of generated methods, choose Tools | Templates.
+                }
+            }
+
+            public boolean add(Integer e) {
+                throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            }
+
+            public boolean remove(Object o) {
+                throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            }
+
+            public boolean containsAll(Collection<?> c) {
+                for (Object o:c) {
+                    if (!contains(o))
+                        return false;
+                }
+                return true;
+            }
+
+            public boolean addAll(Collection<? extends Integer> c) {
+                throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            }
+
+            public boolean removeAll(Collection<?> c) {
+                throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            }
+
+            public boolean retainAll(Collection<?> c) {
+                throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            }
+
+            public void clear() {
+                throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            }
+        };
+    }
     
     
     public double max(double[] values) {
