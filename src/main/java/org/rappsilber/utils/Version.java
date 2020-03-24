@@ -104,8 +104,15 @@ public class Version {
             }
         }
         String[] v = properties.getProperty(property).split("\\.");
-
-        Version version = new Version(Integer.parseInt(v[0]), Integer.parseInt(v[1]), Integer.parseInt(v[2]));
+        
+        int major = 0;
+        int minor = 0;
+        int build = 0;
+        try {major = Integer.parseInt(v[0]);} catch (Exception e) {Logger.getLogger(Version.class.getName()).log(Level.WARNING,"Error parsing version major:", e);}
+        try {minor = Integer.parseInt(v[1]);} catch (Exception e) {Logger.getLogger(Version.class.getName()).log(Level.WARNING,"Error parsing version minor:", e);}
+        try {build = Integer.parseInt(v[2]);} catch (Exception e) {Logger.getLogger(Version.class.getName()).log(Level.WARNING,"Error parsing version build:", e);}
+        
+        Version version = new Version(major, minor, build);
         if (v.length > 3) {
             version.setExtension(v[3]);
         }
