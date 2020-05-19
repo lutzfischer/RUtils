@@ -107,14 +107,32 @@ public class Version {
         
         int major = 0;
         int minor = 0;
-        int build = 0;
+        Integer build = null;
+        String extension = null;
         try {major = Integer.parseInt(v[0]);} catch (Exception e) {Logger.getLogger(Version.class.getName()).log(Level.WARNING,"Error parsing version major:", e);}
         try {minor = Integer.parseInt(v[1]);} catch (Exception e) {Logger.getLogger(Version.class.getName()).log(Level.WARNING,"Error parsing version minor:", e);}
-        try {build = Integer.parseInt(v[2]);} catch (Exception e) {Logger.getLogger(Version.class.getName()).log(Level.WARNING,"Error parsing version build:", e);}
+        if (v.length>2) {
+            try {
+                build = Integer.parseInt(v[2]);
+            } catch (Exception e) {
+                if (v.length>3) {
+                    Logger.getLogger(Version.class.getName()).log(Level.WARNING,"Error parsing version build:", e);
+                } else {
+                    extension = v[2];
+                }
+            }
+        }
         
         Version version = new Version(major, minor, build);
         if (v.length > 3) {
-            version.setExtension(v[3]);
+            if (extension == null) {
+                extension = v[3];
+            } else {
+                extension += "." + v[3];
+            }
+        }
+        if (extension != null) {
+            version.setExtension(extension);
         }
         return version;
     }
