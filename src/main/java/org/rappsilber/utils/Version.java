@@ -103,7 +103,7 @@ public class Version {
                 Logger.getLogger(Version.class.getName()).log(Level.WARNING,"Could not parse version will be set to 0.0.0",ex);
             }
         }
-        String[] v = properties.getProperty(property).split("\\.");
+        String[] v = properties.getProperty(property).split("\\.",4);
         
         int major = 0;
         int minor = 0;
