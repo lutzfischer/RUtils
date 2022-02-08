@@ -101,13 +101,20 @@ public class FileBrowser extends javax.swing.JPanel {
             unsetFile();
         else {
             if (this.m_multipleFiles) {
-                String paths[] = path.split("\\s* | \\s*");
-                boolean allExists = true;
-                for (String p : paths) {
-                    File f = new File(p);
-                    allExists &= f.exists();
+                // test if this is an existing file or the parent folder exists
+                if (new File(path).exists() || new File(path).getParentFile().exists()) {
+                    // yes - assume it is a single file
+                    setFile(new File(path));
+                } else {
+                    // no - assume it is mend as a list of files
+                    String paths[] = path.split("\\s* | \\s*");
+                    boolean allExists = true;
+                    for (String p : paths) {
+                        File f = new File(p);
+                        allExists &= f.exists();
+                    }
+                    setFiles(paths);
                 }
-                setFiles(paths);
             } else {
                 setFile(new File(path));
             }
