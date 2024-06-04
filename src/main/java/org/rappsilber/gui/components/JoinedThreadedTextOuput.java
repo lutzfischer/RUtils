@@ -41,6 +41,9 @@ public class JoinedThreadedTextOuput {
     HashMap<Thread,Boolean> m_messagesPublished = new HashMap<Thread, Boolean>();
     /** messages that have been displayed for a certain time can be "over-written" by other threads*/
     HashMap<Thread, UpdateableInteger> m_messagestimeout = new HashMap<Thread, UpdateableInteger>();
+    String m_lastmessage = "";
+    
+    String m_published = m_lastmessage;
     
     /** 
      * what text-components should display the messages
@@ -69,7 +72,7 @@ public class JoinedThreadedTextOuput {
      * A timer-thread running as deamon-taking care of cleaning up old messages.
      */
     java.util.Timer m_cleanupTimer = new java.util.Timer("Timer - status cleanup", true);
-    private int m_timeout = 120;
+    private int m_timeout = 10;
     
     protected class CleanUpTask extends TimerTask {
         AtomicBoolean running = new AtomicBoolean(false);
@@ -82,8 +85,8 @@ public class JoinedThreadedTextOuput {
 //                    if (!t.isAlive()) {
 //                        delete.add(t);
 //                    } else {
-                        UpdateableInteger ui =m_messagestimeout.get(t);
-                        if (ui!= null && ui.value-- ==0) {
+                        UpdateableInteger ui = m_messagestimeout.get(t);
+                        if (ui!= null && ui.value-- == 0) {
                             delete.add(t);
                         }
 //                    }
@@ -148,7 +151,8 @@ public class JoinedThreadedTextOuput {
         Thread origin = Thread.currentThread();
         m_messages.put(origin, message);
         m_messagesPublished.put(origin, Boolean.FALSE);
-        m_messagestimeout.put(origin, new UpdateableInteger(m_timeout));
+        m_messagestimeout.put(origin, new UpdateableInteger(m_timeout + m_messages.size()));
+        m_lastmessage = message;
         publish();
     }
         
@@ -167,7 +171,7 @@ public class JoinedThreadedTextOuput {
         final StringBuffer textMessage = new StringBuffer();
         
         // if we have to many status updates try to delete some stale ones
-        if (m_messagestimeout.size() >2) {
+        if (m_messagestimeout.size() >1) {
             ArrayList<Thread> delete = new ArrayList<Thread>();
             ArrayList<Thread> tfd = new ArrayList<>(m_messagestimeout.keySet());
             java.util.Collections.sort(tfd, new Comparator<Thread>() {
@@ -217,20 +221,29 @@ public class JoinedThreadedTextOuput {
 //                delete.add(t);
 //            }
         }
-        if (lineMessage.length() >0)
+        
+        if (m_messages.size() == 0) {
+            lineMessage.append(" | ").append(m_lastmessage);
+        }
+        
+        if (lineMessage.length() >0) {
             lineMessage.delete(0, 3);
+        }
         
         javax.swing.SwingUtilities.invokeLater( new Runnable() {
 
             public void run() {
+                
                 for (JTextComponent tc : m_guiout) {
                     tc.setText(tc.getText() + textMessage);
                 }
+                
                 if (lineMessage.length()>0) {
                     for (JTextField tf : m_guioutTextField) {
                         tf.setText(lineMessage.toString());
                     }
                 }
+                
             }
         });
 

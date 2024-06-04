@@ -30,6 +30,7 @@ import javax.swing.JTextArea;
 import javax.swing.event.AncestorEvent;
 import javax.swing.event.AncestorListener;
 import org.rappsilber.gui.components.StackTraceMonitor;
+import org.rappsilber.utils.MemoryInfoProvider;
 import org.rappsilber.utils.ObjectWrapper;
 import org.rappsilber.utils.RArrayUtils;
 import org.rappsilber.utils.StringUtils;
@@ -53,6 +54,8 @@ public class Memory extends javax.swing.JPanel {
     private boolean showGCButton = true;
     private StackTraceMonitor stacktracemonitor;
     
+    MemoryInfoProvider memInfo;
+    
     //private boolean agc = false;
     
     protected class ScanTask extends TimerTask {
@@ -74,6 +77,11 @@ public class Memory extends javax.swing.JPanel {
                     String fmu = "B";
                     double mm = runtime.maxMemory();
                     double tm = runtime.totalMemory();
+                    if (memInfo != null) {
+                        fm = memInfo.getFreeMem();
+                        mm = memInfo.getMaxMem();
+                        tm = memInfo.geTotalMem();
+                    }
                     double um = tm-fm;
                     recent.add(um);
                     if (recent.size()>maxRecent) {
@@ -110,6 +118,10 @@ public class Memory extends javax.swing.JPanel {
                             message = "Used: " + StringUtils.toHuman(um) + " of " + StringUtils.toHuman(mm) + "  (Free:" + StringUtils.toHuman(fm) + " Total:" + StringUtils.toHuman(tm) + " Max:"+ StringUtils.toHuman(mm) +")";
                             Logger.getLogger(Memory.class.getName()).log(Level.INFO,"Memory after GC:" + message);
                             didgc=100;
+                            if (memInfo!=null) {
+                                memInfo.initiateGC();
+                            }
+
                         } else if (didgc>0) {
                             didgc--;
                         }
@@ -313,7 +325,21 @@ public class Memory extends javax.swing.JPanel {
         um = tm-fm;
         message = "Used: " + StringUtils.toHuman(um) + " of " + StringUtils.toHuman(mm) + "  (Free:" + StringUtils.toHuman(fm) + " Total:" + StringUtils.toHuman(tm) + " Max:"+ StringUtils.toHuman(mm) +")";
         Logger.getLogger(Memory.class.getName()).log(Level.INFO,"Memory after GC:" + message);
+        
+        if (this.memInfo != null) {
+            this.memInfo.initiateGC();
+        }
     }
+
+    public void setMemInfo(MemoryInfoProvider memInfo) {
+        this.memInfo = memInfo;
+    }
+
+    public MemoryInfoProvider getMemInfo() {
+        return memInfo;
+    }
+    
+    
 
     private void mGCActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mGCActionPerformed
         doGC();

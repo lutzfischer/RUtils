@@ -25,7 +25,7 @@ import java.util.logging.Logger;
  *
  * @author lfischer
  */
-public class Version {
+public class Version  implements Comparable<Version> {
     /** build - svn-revision*/
     public Integer build;
     /** extension */
@@ -35,12 +35,38 @@ public class Version {
     /** the minor number of the version*/
     public int minor;
 
+    public Version(String version) {
+        String[] parts= version.split("\\.",4);
+        
+        this.major = Integer.parseInt(parts[0].trim());
+        if (parts.length >1)
+            if (parts[1].trim().matches("[0-9]*"))
+                this.minor = Integer.parseInt(parts[1]);
+            else 
+                this.extension=parts[1].trim();
+        if (parts.length >2)
+            if (parts[2].trim().matches("[0-9]*"))
+                this.build = Integer.valueOf(parts[2]);
+            else 
+                if (this.extension == null)
+                    this.extension=parts[2].trim();
+                else
+                    this.extension+="."+parts[2].trim();
+            
+        if (parts.length >3)
+            if (this.extension == null)
+                this.extension=parts[3].trim();
+            else
+                this.extension+="."+parts[3].trim();
+    }
+    
     public Version(int major, int minor, Integer build) {
         this.major = major;
         this.minor = minor;
         this.build = build;
         this.extension="";
     }
+    
     public Version(int major, int minor, Integer build, int extension) {
         this.major = major;
         this.minor = minor;
@@ -69,6 +95,13 @@ public class Version {
         setExtension(svn_refbuild);
     }
 
+    public Version(Version v) {
+        this.major = v.major;
+        this.minor = v.minor;
+        this.build = v.build;
+        this.extension = v.extension;
+    }
+    
         
     public String setExtension(String svn_refbuild) {
         if (svn_refbuild.matches("\\$Rev:\\s*[0-9]+\\s*\\$"))
@@ -89,6 +122,28 @@ public class Version {
     public String toString() {
         
         return major + "." + minor +  (build == null?"": "." + build) + (extension.isEmpty() ? "":  "."+extension );
+    }
+
+    public int compareTo(Version o) {
+        int ret = this.major - o.major;
+        if (ret == 0)
+            ret = this.minor - o.minor;
+        if (ret == 0)
+            ret = this.build - o.build;
+        if (ret == 0) {
+            if (this.extension == null) {
+                if (o.extension != null) {
+                    ret = 1;
+                } else
+                    ret = 0;
+            } else  if (o.extension == null) {
+                ret = -1;
+            } else {
+                ret = this.extension.compareTo(o.extension);
+            }
+        }
+        return ret;
+        
     }
     
     public static Version parseEmbededVersion(String propertyFile, String property) {

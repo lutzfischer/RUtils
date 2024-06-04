@@ -135,10 +135,10 @@ public class FileBrowser extends javax.swing.JPanel {
         }
         m_file = new File[]{path};
         txtFilePath.setText(m_file[0].getAbsolutePath());
-        if ((path.exists()) &&  path.isDirectory())
-            LocalProperties.setFolder(m_LocalPropertyKey, path);
+        if ((path.exists()) &&  path.getAbsoluteFile().isDirectory())
+            LocalProperties.setFolder(m_LocalPropertyKey, path.getAbsoluteFile());
         else
-            LocalProperties.setFolder(m_LocalPropertyKey, path.getParent());
+            LocalProperties.setFolder(m_LocalPropertyKey, path.getAbsoluteFile().getParent());
 
         doActionPerformed();
     }
