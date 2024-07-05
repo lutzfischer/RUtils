@@ -58,6 +58,8 @@ public class Version  implements Comparable<Version> {
                 this.extension=parts[3].trim();
             else
                 this.extension+="."+parts[3].trim();
+        if (this.extension == null)
+            this.extension="";
     }
     
     public Version(int major, int minor, Integer build) {
