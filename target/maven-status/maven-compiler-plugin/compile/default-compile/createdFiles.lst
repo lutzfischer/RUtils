@@ -18,6 +18,7 @@ org/rappsilber/gui/logging/JTextAreaHandle.class
 org/rappsilber/utils/RArrayUtils$2.class
 org/rappsilber/gui/components/FileList$2.class
 org/rappsilber/utils/NullOutputStream$1.class
+org/rappsilber/utils/ms/Atom.class
 org/rappsilber/gui/GenericTextPopUpMenu$7.class
 org/rappsilber/gui/components/memory/Memory$ScanTask.class
 org/rappsilber/gui/GenericTextPopUpMenu$3.class
@@ -95,6 +96,7 @@ org/rappsilber/gui/GenericTextPopUpMenu$6.class
 org/rappsilber/utils/DoubleArray2DView$2.class
 org/rappsilber/gui/components/JoinedThreadedTextOuput.class
 org/rappsilber/gui/components/JoinedThreadedTextOuput$CleanUpTask.class
+org/rappsilber/utils/ms/Composition.class
 org/rappsilber/utils/DoubleArrayList$2.class
 org/rappsilber/gui/logging/JTextAreaHandle$1.class
 org/rappsilber/utils/Version.class
