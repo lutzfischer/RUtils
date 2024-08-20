@@ -131,7 +131,7 @@ public class Version  implements Comparable<Version> {
         if (ret == 0)
             ret = this.minor - o.minor;
         if (ret == 0)
-            ret = this.build - o.build;
+            ret = (this.build == null?0:this.build) - (o.build == null?0:o.build);
         if (ret == 0) {
             if (this.extension == null) {
                 if (o.extension != null) {
@@ -147,6 +147,13 @@ public class Version  implements Comparable<Version> {
         return ret;
         
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        return (obj instanceof Version) && (compareTo((Version)obj) == 0);
+    }
+    
+    
     
     public static Version parseEmbededVersion(String propertyFile, String property) {
         
