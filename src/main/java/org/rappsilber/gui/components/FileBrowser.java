@@ -296,6 +296,11 @@ public class FileBrowser extends javax.swing.JPanel {
             setFiles(files);
         }
     }
+    
+    @Override
+    public void requestFocus() {
+        btnSelect.requestFocus();
+    }
 
     private void txtFilePathActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtFilePathActionPerformed
         setFile(txtFilePath.getText());

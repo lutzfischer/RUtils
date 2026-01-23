@@ -338,6 +338,11 @@ public class FileList extends javax.swing.JPanel {
     public boolean isSelected(int i) {
         return (Boolean)m_model.getValueAt(i, 2);
     }
+
+    @Override
+    public void requestFocus() {
+        btnLoadMSM.requestFocus();
+    }
     
     
     /** This method is called from within the constructor to

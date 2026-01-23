@@ -274,6 +274,7 @@ public final class ProcessLauncher {
 
           if (this.isErrorOutput) {
             fireErr(clearedbuf);
+            fireOut(clearedbuf);
           } else {
             fireOut(clearedbuf);
           }
